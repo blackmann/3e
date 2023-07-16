@@ -1,0 +1,16 @@
+body {
+  height: 100vh;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#app {
+  height: 100%;
+}
+
+#app > :first-child {
+  height: 100%;
+}

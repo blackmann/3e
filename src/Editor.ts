@@ -80,19 +80,27 @@ class EditorProvider implements vscode.CustomEditorProvider<Doc> {
       'app/index.js'
     )
 
-    webviewPanel.webview.html = /* html */ `
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  </head>
-  <body>
-    <div id="app"></div>
-    <script src="${js}"></script>
-  </body>
-</html>
-    `
+    const css = getUri(
+      webviewPanel.webview,
+      this.extensionUri,
+      'out',
+      'app/index.css'
+    )
+
+    webviewPanel.webview.html = html({ css, js })
+
+    webviewPanel.webview.onDidReceiveMessage(async (e) => {
+      console.log('onDidReceiveMessage', e)
+      if (e.type === 'ready') {
+        const blob = new Uint8Array(
+          await vscode.workspace.fs.readFile(document.uri)
+        )
+        webviewPanel.webview.postMessage({
+          type: 'glb',
+          blob,
+        })
+      }
+    })
   }
 
   private static readonly viewType = '3e.editor'
@@ -104,6 +112,23 @@ class EditorProvider implements vscode.CustomEditorProvider<Doc> {
       provider
     )
   }
+}
+
+function html({ css, js }: Record<string, vscode.Uri>) {
+  return /* html */ `
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1.0">
+      <link rel="stylesheet" href="${css}" />
+    </head>
+    <body>
+      <div id="app"></div>
+      <script src="${js}"></script>
+    </body>
+  </html>
+      `
 }
 
 export default EditorProvider

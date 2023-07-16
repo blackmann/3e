@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import * as React from 'react'
 import Editor from './editor'
+import './global.css'
 
-// @ts-ignore
-createRoot(document.getElementById('app')).render(<Editor />)
+createRoot(document.getElementById('app')!).render(<Editor />)

@@ -1,0 +1,4 @@
+.header {
+  padding: 0.5rem 20px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+}

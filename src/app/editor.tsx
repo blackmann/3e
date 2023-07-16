@@ -1,8 +1,18 @@
 import React from 'react'
-import { VSCodeButton } from '@vscode/webview-ui-toolkit/react'
+import Header from './header'
+import styles from './editor.module.css'
+import Viewer from './viewer'
 
 function Editor() {
-  return <VSCodeButton>This is the editor</VSCodeButton>
+  return (
+    <div className={styles.editor}>
+      <Header />
+
+      <div className={styles.viewer}>
+        <Viewer />
+      </div>
+    </div>
+  )
 }
 
 export default Editor

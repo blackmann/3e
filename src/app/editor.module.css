@@ -1,0 +1,8 @@
+.editor {
+  display: flex;
+  flex-direction: column;
+}
+
+.viewer {
+  flex: 1;
+}
