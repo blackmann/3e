@@ -1,4 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import * as React from 'react'
+import Editor from './editor'
 
-createRoot(<div>Hello world xx</div>, document.getElementById('app'))
+// @ts-ignore
+createRoot(document.getElementById('app')).render(<Editor />)
