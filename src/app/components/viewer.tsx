@@ -6,6 +6,7 @@ import {
   MeshStandardMaterial,
 } from 'three'
 import {
+  Environment,
   GizmoHelper,
   GizmoViewport,
   OrbitControls,
@@ -52,11 +53,16 @@ function Mesh({ url }: MeshProps) {
             materialsIndexRef.current[name] = new MeshStandardMaterial({
               color: randomColor(),
               roughness: 1,
-              side: DoubleSide
+              side: DoubleSide,
             })
           }
 
           return materialsIndexRef.current[name]
+        }
+
+        case 'textured': {
+          nodes[name].material.side = DoubleSide
+          return nodes[name].material
         }
 
         default:
@@ -68,6 +74,8 @@ function Mesh({ url }: MeshProps) {
 
   const showLights =
     !wireframe && ['basic', 'basic-randomized'].includes(materialType)
+
+  const showEnvironment = materialType === 'textured'
 
   return (
     <>
@@ -100,6 +108,8 @@ function Mesh({ url }: MeshProps) {
           <pointLight intensity={1} position={[2, 5, -2]} />
         </>
       )}
+
+      {showEnvironment && <Environment preset={appearance.value.environmentPreset} />}
     </>
   )
 }

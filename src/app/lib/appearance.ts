@@ -1,13 +1,11 @@
+import type { PresetsType } from '@react-three/drei/helpers/environment-assets'
 import { signal } from '@preact/signals-react'
 
-type MaterialType =
-  | 'normal'
-  | 'basic'
-  | 'basic-randomized'
-  | 'textured'
+type MaterialType = 'normal' | 'basic' | 'basic-randomized' | 'textured'
 
 const appearance = signal({
-  materialType: <MaterialType>'basic-randomized',
+  environmentPreset: <PresetsType>'city',
+  materialType: <MaterialType>'textured',
   wireframe: false,
 })
 
@@ -20,6 +18,10 @@ function selectMaterialType(t: MaterialType) {
   appearance.value = { ...appearance.value, materialType: t }
 }
 
+function setEnvironmentPreset(p: PresetsType) {
+  appearance.value = { ...appearance.value, environmentPreset: p }
+}
+
 export default appearance
-export { selectMaterialType, toggleWireframe }
+export { selectMaterialType, setEnvironmentPreset, toggleWireframe }
 export type { MaterialType }

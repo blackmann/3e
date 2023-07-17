@@ -6,9 +6,11 @@ import {
 import appearance, {
   MaterialType,
   selectMaterialType,
+  setEnvironmentPreset,
   toggleWireframe,
 } from '../lib/appearance'
 import Archive from '../svgs/Archive'
+import type { PresetsType } from '@react-three/drei/helpers/environment-assets'
 import React from 'react'
 import Wireframe from '../svgs/Wireframe'
 import clsx from 'clsx'
@@ -52,10 +54,17 @@ function Header() {
         <VSCodeDropdown
           className={styles.select}
           disabled={wireframe || materialType !== 'textured'}
+          onChange={(e) =>
+            setEnvironmentPreset(
+              (e.target as HTMLSelectElement).value as PresetsType
+            )
+          }
+          value={appearance.value.environmentPreset}
         >
-          <VSCodeOption>Studio light 1</VSCodeOption>
-          <VSCodeOption>Sun</VSCodeOption>
-          <VSCodeOption>None</VSCodeOption>
+          <VSCodeOption value="apartment">Apartment</VSCodeOption>
+          <VSCodeOption value="city">City</VSCodeOption>
+          <VSCodeOption value="dawn">Dawn</VSCodeOption>
+          <VSCodeOption value="forest">Forest</VSCodeOption>
         </VSCodeDropdown>
       </div>
 
