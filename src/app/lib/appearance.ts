@@ -5,7 +5,7 @@ type MaterialType = 'normal' | 'basic' | 'basic-randomized' | 'textured'
 
 const appearance = signal({
   environmentPreset: <PresetsType>'city',
-  materialType: <MaterialType>'textured',
+  materialType: <MaterialType>'normal',
   wireframe: false,
 })
 

@@ -1,31 +1,21 @@
 import * as vscode from 'vscode'
+import Doc from './doc'
+import Outliner from './outliner'
 import getUri from './lib/get-uri'
 
-class Doc implements vscode.CustomDocument {
-  uri: vscode.Uri
-
-  constructor(uri: vscode.Uri) {
-    this.uri = uri
-  }
-
-  dispose(): void {
-    //
-  }
-}
-
-class Obj extends vscode.TreeItem {}
-
-class EditorProvider
-  implements vscode.CustomEditorProvider<Doc>, vscode.TreeDataProvider<Obj>
-{
+class EditorProvider implements vscode.CustomEditorProvider<Doc> {
   private extensionUri: vscode.Uri
+
+  private active?: [vscode.WebviewPanel, Doc]
 
   constructor(extensionUri: vscode.Uri) {
     this.extensionUri = extensionUri
   }
 
-  private readonly _onDidChangeCustomDocument =
-    new vscode.EventEmitter<vscode.CustomDocumentEditEvent>()
+  private readonly _onDidChangeCustomDocument = new vscode.EventEmitter<
+    vscode.CustomDocumentEditEvent<Doc>
+  >()
+
   onDidChangeCustomDocument = this._onDidChangeCustomDocument.event
 
   saveCustomDocument(
@@ -63,8 +53,12 @@ class EditorProvider
     openContext: vscode.CustomDocumentOpenContext,
     token: vscode.CancellationToken
   ): Doc | Thenable<Doc> {
-    const doc = new Doc(uri)
-    return doc
+    return (async () => {
+      const buffer = new Uint8Array(await vscode.workspace.fs.readFile(uri))
+      const doc = new Doc(uri, buffer)
+
+      return doc
+    })()
   }
 
   resolveCustomEditor(
@@ -93,47 +87,42 @@ class EditorProvider
 
     webviewPanel.webview.html = html({ css, js })
 
+    // ? we've created this webview just now, so it must be active
+    Outliner.instance?.refresh(document)
+    this.active = [webviewPanel, document]
+
     webviewPanel.webview.onDidReceiveMessage(async (e) => {
       switch (e.type) {
         case 'ready': {
-          const blob = new Uint8Array(
-            await vscode.workspace.fs.readFile(document.uri)
-          )
           webviewPanel.webview.postMessage({
-            blob,
+            blob: document.buffer,
             type: 'glb',
           })
         }
+      }
+    })
 
-        case 'symbols': {
+    webviewPanel.onDidChangeViewState((e) => {
+      if (e.webviewPanel.active) {
+        this.active = [e.webviewPanel, document]
+        Outliner.instance?.refresh(document)
+      } else {
+        if (e.webviewPanel === this.active?.[0]) {
+          this.active = undefined
+          Outliner.instance?.refresh(undefined)
         }
       }
     })
   }
 
-  getTreeItem(element: Obj): vscode.TreeItem | Thenable<vscode.TreeItem> {
-    return element
-  }
-
-  getChildren(element?: Obj | undefined): vscode.ProviderResult<Obj[]> {
-    return Promise.resolve([new Obj('box geo')])
-  }
-
   private static readonly viewType = '3e.editor'
-  private static readonly outlineType = '3e.outline'
 
-  static register(ctx: vscode.ExtensionContext): vscode.Disposable[] {
+  static register(ctx: vscode.ExtensionContext): vscode.Disposable {
     const provider = new EditorProvider(ctx.extensionUri)
-    return [
-      vscode.window.registerCustomEditorProvider(
-        EditorProvider.viewType,
-        provider
-      ),
-      vscode.window.registerTreeDataProvider(
-        EditorProvider.outlineType,
-        provider
-      ),
-    ]
+    return vscode.window.registerCustomEditorProvider(
+      EditorProvider.viewType,
+      provider
+    )
   }
 }
 
