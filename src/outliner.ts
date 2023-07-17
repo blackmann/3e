@@ -2,8 +2,7 @@ import * as vscode from 'vscode'
 
 class ItemUnion extends vscode.TreeItem {
   tree?: Scene
-  props?: any
-
+  props?: MeshRep
 
   constructor(
     label: string | vscode.TreeItemLabel,
@@ -34,21 +33,40 @@ class Outliner implements vscode.TreeDataProvider<ItemUnion> {
     return element
   }
 
-  getChildren(element?: ItemUnion | undefined): vscode.ProviderResult<ItemUnion[]> {
+  getChildren(
+    element?: ItemUnion | undefined
+  ): vscode.ProviderResult<ItemUnion[]> {
     if (!this.activeDocPath || !this.scenes[this.activeDocPath]) {
       return []
     }
 
     if (element?.props) {
-      const material = new ItemUnion(element.props.material.type || 'Unknown Material')
+      const { material } = element.props
+      const items: ItemUnion[] = []
+
+      if (material.name) {
+        const item = new ItemUnion(element.props.material.name || '[default]')
+
+        item.description = element.props.material.type
+        items.push(item)
+      }
+
       // add animation and maybe other relevant info
 
-      return [material]
+      return items
     }
 
     const scene = this.scenes[this.activeDocPath]
 
-    return [new ItemUnion('Mesh' + this.activeDocPath.length)]
+    return scene.nodes.map(
+      (node) =>
+        new ItemUnion(
+          node.name,
+          undefined,
+          node,
+          vscode.TreeItemCollapsibleState.Collapsed
+        )
+    )
   }
 
   refresh(path?: string) {

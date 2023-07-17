@@ -73,8 +73,24 @@ function Mesh({ url }: MeshProps) {
   )
 
   React.useEffect(() => {
+    const sceneNodes = []
+
+    for (const [name, properties] of Object.entries(nodes)) {
+      if (properties.type !== 'Mesh') {
+        continue
+      }
+
+      sceneNodes.push({
+        material: {
+          name: properties.material.name,
+          type: properties.material.type,
+        },
+        name,
+      })
+    }
+
     vscode.postMessage({
-      scene: { t: 'hello world' },
+      scene: { nodes: sceneNodes },
       type: 'scene',
     })
   }, [nodes])
