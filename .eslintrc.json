@@ -5,6 +5,9 @@
         "ecmaVersion": 6,
         "sourceType": "module"
     },
+    "extends": [
+        "plugin:react/recommended"
+    ],
     "plugins": [
         "@typescript-eslint"
     ],
@@ -12,7 +15,11 @@
         "curly": "warn",
         "eqeqeq": "warn",
         "no-throw-literal": "warn",
-        "semi": "off"
+        "semi": "off",
+        "sort-imports": "warn",
+        "sort-keys": "warn",
+        "react/jsx-sort-props": "warn",
+        "react/no-unknown-property": "off"
     },
     "ignorePatterns": [
         "out",

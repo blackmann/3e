@@ -100,8 +100,8 @@ class EditorProvider
             await vscode.workspace.fs.readFile(document.uri)
           )
           webviewPanel.webview.postMessage({
-            type: 'glb',
             blob,
+            type: 'glb',
           })
         }
 

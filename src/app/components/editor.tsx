@@ -1,7 +1,7 @@
-import React from 'react'
 import Header from './header'
-import styles from './editor.module.css'
+import React from 'react'
 import Viewer from './viewer'
+import styles from './editor.module.css'
 
 function Editor() {
   return (

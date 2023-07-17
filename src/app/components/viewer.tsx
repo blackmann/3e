@@ -1,38 +1,45 @@
+import { DoubleSide, MeshBasicMaterial, MeshNormalMaterial } from 'three'
 import {
   GizmoHelper,
   GizmoViewport,
   OrbitControls,
+  Wireframe,
   useGLTF,
 } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import React from 'react'
+import appearance from '../lib/appearance'
 import { vscode } from '../lib/vscode'
-import { MeshNormalMaterial, DoubleSide } from 'three'
 
 interface MeshProps {
   url: string
 }
 
 const normalMaterial = new MeshNormalMaterial({ side: DoubleSide })
+const wireframeMaterial = new MeshBasicMaterial({color: '#f0f0f0', wireframe: true})
 
 function Mesh({ url }: MeshProps) {
   const { nodes } = useGLTF(url)
 
   return (
     <group>
-      {Object.entries(nodes).map(([name, props]) => {
-        const { x, y, z } = props.position
+      {Object.entries(nodes).map(([name, properties]) => {
+        if (!properties.geometry) {
+          return null
+        }
+
+        const { x, y, z } = properties.position
         const position = [x, y, z] as const
 
-        const { x: a, y: b, z: c } = props.rotation
+        const { x: a, y: b, z: c } = properties.rotation
         return (
           <mesh
+            geometry={properties.geometry}
             key={name}
-            geometry={props.geometry}
-            material={normalMaterial}
+            material={appearance.value.wireframe ? wireframeMaterial : normalMaterial}
             position={position}
             rotation={[a, b, c]}
-          />
+          ></mesh>
         )
       })}
     </group>

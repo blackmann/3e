@@ -8,3 +8,7 @@
 .header .appearance > * {
   margin-right: 0.5rem;
 }
+
+.iconButton.active {
+  background-color: var(--button-icon-hover-background);
+}

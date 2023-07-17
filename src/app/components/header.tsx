@@ -1,18 +1,27 @@
-import React from 'react'
-import styles from './header.module.css'
 import {
   VSCodeButton,
   VSCodeDropdown,
   VSCodeOption,
 } from '@vscode/webview-ui-toolkit/react'
-import Wireframe from './svgs/Wireframe'
-import Archive from './svgs/Archive'
+import appearance, { toggleWireframe } from '../lib/appearance'
+import Archive from '../svgs/Archive'
+import React from 'react'
+import Wireframe from '../svgs/Wireframe'
+import clsx from 'clsx'
+import styles from './header.module.css'
 
 function Header() {
   return (
     <header className={styles.header}>
       <div className={styles.appearance}>
-        <VSCodeButton aria-label="Show wireframe" appearance="icon">
+        <VSCodeButton
+          appearance="icon"
+          className={clsx(styles.iconButton, {
+            [styles.active]: appearance.value.wireframe,
+          })}
+          onClick={() => toggleWireframe()}
+          title="Show wireframe"
+        >
           <Wireframe />
         </VSCodeButton>
 
@@ -31,7 +40,7 @@ function Header() {
       </div>
 
       <div>
-        <VSCodeButton appearance="icon" aria-label="Export to JSX">
+        <VSCodeButton appearance="icon" title="Export to JSX">
           <Archive />
         </VSCodeButton>
       </div>
