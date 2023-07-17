@@ -3,7 +3,11 @@ import {
   VSCodeDropdown,
   VSCodeOption,
 } from '@vscode/webview-ui-toolkit/react'
-import appearance, { toggleWireframe } from '../lib/appearance'
+import appearance, {
+  MaterialType,
+  selectMaterialType,
+  toggleWireframe,
+} from '../lib/appearance'
 import Archive from '../svgs/Archive'
 import React from 'react'
 import Wireframe from '../svgs/Wireframe'
@@ -11,6 +15,8 @@ import clsx from 'clsx'
 import styles from './header.module.css'
 
 function Header() {
+  const { wireframe, materialType } = appearance.value
+
   return (
     <header className={styles.header}>
       <div className={styles.appearance}>
@@ -25,17 +31,31 @@ function Header() {
           <Wireframe />
         </VSCodeButton>
 
-        <VSCodeDropdown>
-          <VSCodeOption>Normal Material</VSCodeOption>
-          <VSCodeOption>Basic Material</VSCodeOption>
-          <VSCodeOption>Basic Material (Randomized)</VSCodeOption>
-          <VSCodeOption>Textured</VSCodeOption>
-          <VSCodeOption>None</VSCodeOption>
+        <VSCodeDropdown
+          className={styles.select}
+          disabled={wireframe}
+          onChange={(e) =>
+            selectMaterialType(
+              (e.target as HTMLSelectElement).value as MaterialType
+            )
+          }
+          value={materialType}
+        >
+          <VSCodeOption value="normal">Normal Material</VSCodeOption>
+          <VSCodeOption value="basic">Basic Material</VSCodeOption>
+          <VSCodeOption value="basic-randomized">
+            Basic Material (Randomized)
+          </VSCodeOption>
+          <VSCodeOption value="textured">Textured</VSCodeOption>
         </VSCodeDropdown>
 
-        <VSCodeDropdown>
+        <VSCodeDropdown
+          className={styles.select}
+          disabled={wireframe || materialType !== 'textured'}
+        >
           <VSCodeOption>Studio light 1</VSCodeOption>
           <VSCodeOption>Sun</VSCodeOption>
+          <VSCodeOption>None</VSCodeOption>
         </VSCodeDropdown>
       </div>
 

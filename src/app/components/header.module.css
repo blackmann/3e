@@ -12,3 +12,7 @@
 .iconButton.active {
   background-color: var(--button-icon-hover-background);
 }
+
+.select {
+  width: 8rem;
+}
