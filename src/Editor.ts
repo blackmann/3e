@@ -3,6 +3,8 @@ import Doc from './doc'
 import Outliner from './outliner'
 import getUri from './lib/get-uri'
 
+type Path = string
+
 class EditorProvider implements vscode.CustomEditorProvider<Doc> {
   private extensionUri: vscode.Uri
 
@@ -88,8 +90,8 @@ class EditorProvider implements vscode.CustomEditorProvider<Doc> {
     webviewPanel.webview.html = html({ css, js })
 
     // ? we've created this webview just now, so it must be active
-    Outliner.instance?.refresh(document)
     this.active = [webviewPanel, document]
+    this.refreshOutliner(webviewPanel, document)
 
     webviewPanel.webview.onDidReceiveMessage(async (e) => {
       switch (e.type) {
@@ -99,20 +101,28 @@ class EditorProvider implements vscode.CustomEditorProvider<Doc> {
             type: 'glb',
           })
         }
+
+        case 'scene': {
+          Outliner.instance?.setScene(document.uri.path, e.scene)
+        }
       }
     })
 
     webviewPanel.onDidChangeViewState((e) => {
-      if (e.webviewPanel.active) {
-        this.active = [e.webviewPanel, document]
-        Outliner.instance?.refresh(document)
-      } else {
-        if (e.webviewPanel === this.active?.[0]) {
-          this.active = undefined
-          Outliner.instance?.refresh(undefined)
-        }
-      }
+      this.refreshOutliner(e.webviewPanel, document)
     })
+  }
+
+  private refreshOutliner(webviewPanel: vscode.WebviewPanel, doc: Doc) {
+    if (webviewPanel.active) {
+      this.active = [webviewPanel, doc]
+      Outliner.instance?.refresh(doc.uri.path)
+    } else {
+      if (webviewPanel === this.active?.[0]) {
+        this.active = undefined
+        Outliner.instance?.refresh(undefined)
+      }
+    }
   }
 
   private static readonly viewType = '3e.editor'

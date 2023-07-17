@@ -1,5 +1,7 @@
-declare module 'gltfjsx' {
-  import { GLTFLoader } from 'three-stdlib'
+interface MeshRep {
 
-  export { GLTFLoader as GLTFStructureLoader }
+}
+
+interface Scene {
+  nodes: MeshRep[]
 }

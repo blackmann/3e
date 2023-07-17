@@ -72,6 +72,13 @@ function Mesh({ url }: MeshProps) {
     [wireframe, materialType]
   )
 
+  React.useEffect(() => {
+    vscode.postMessage({
+      scene: { t: 'hello world' },
+      type: 'scene',
+    })
+  }, [nodes])
+
   const showLights =
     !wireframe && ['basic', 'basic-randomized'].includes(materialType)
 
@@ -109,7 +116,9 @@ function Mesh({ url }: MeshProps) {
         </>
       )}
 
-      {showEnvironment && <Environment preset={appearance.value.environmentPreset} />}
+      {showEnvironment && (
+        <Environment preset={appearance.value.environmentPreset} />
+      )}
     </>
   )
 }

@@ -1,73 +1,63 @@
-import * as stdlib from 'three-stdlib'
 import * as vscode from 'vscode'
-import Doc from './doc'
 
-class Item extends vscode.TreeItem {
-  doc?: Doc
-  ref?: THREE.Mesh
+class ItemUnion extends vscode.TreeItem {
+  tree?: Scene
+  props?: any
+
 
   constructor(
     label: string | vscode.TreeItemLabel,
-    doc?: Doc,
-    ref?: any,
+    tree?: Scene,
+    props?: any,
     collapsibleState?: vscode.TreeItemCollapsibleState
   ) {
     super(label, collapsibleState)
-    this.doc = doc
-    this.ref = ref
+    this.tree = tree
+    this.props = props
   }
 }
 
-class Outliner implements vscode.TreeDataProvider<Item> {
+class Outliner implements vscode.TreeDataProvider<ItemUnion> {
   static instance: Outliner
   static treeDataType = '3e.outline'
 
-  private activeDoc?: Doc
+  private activeDocPath?: string
+  private scenes: Record<string, Scene> = {}
+
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<
-    Item | undefined
+    ItemUnion | undefined
   >()
 
   onDidChangeTreeData = this._onDidChangeTreeData.event
 
-  getTreeItem(element: Item): Item | Thenable<Item> {
+  getTreeItem(element: ItemUnion): ItemUnion | Thenable<ItemUnion> {
     return element
   }
 
-  getChildren(element?: Item | undefined): vscode.ProviderResult<Item[]> {
-    if (element?.ref) {
-      const material = new Item(element.ref.material.type || 'Unknown Material')
+  getChildren(element?: ItemUnion | undefined): vscode.ProviderResult<ItemUnion[]> {
+    if (!this.activeDocPath || !this.scenes[this.activeDocPath]) {
+      return []
+    }
+
+    if (element?.props) {
+      const material = new ItemUnion(element.props.material.type || 'Unknown Material')
       // add animation and maybe other relevant info
 
       return [material]
     }
 
-    if (!this.activeDoc) {
-      return []
-    }
+    const scene = this.scenes[this.activeDocPath]
 
-    let doc = this.activeDoc
-    const loader = new stdlib.GLTFLoader()
-    return (async () => {
-      const {
-        scene: { children },
-      } = await new Promise((res, rej) =>
-        loader.parse(doc.buffer.buffer, '', res, rej)
-      )
-
-      return children.map(
-        (child) =>
-          new Item(
-            child.name,
-            doc,
-            child,
-            vscode.TreeItemCollapsibleState.Collapsed
-          )
-      )
-    })()
+    return [new ItemUnion('Mesh' + this.activeDocPath.length)]
   }
 
-  refresh(doc?: Doc) {
-    this.activeDoc = doc
+  refresh(path?: string) {
+    this.activeDocPath = path
+    this._onDidChangeTreeData.fire(undefined)
+  }
+
+  setScene(path: string, scene: Scene) {
+    this.scenes[path] = scene
     this._onDidChangeTreeData.fire(undefined)
   }
 
