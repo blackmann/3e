@@ -7,13 +7,13 @@ import {
 import { Canvas } from '@react-three/fiber'
 import React from 'react'
 import { vscode } from '../lib/vscode'
-import { MeshNormalMaterial } from 'three'
+import { MeshNormalMaterial, DoubleSide } from 'three'
 
 interface MeshProps {
   url: string
 }
 
-const normalMaterial = new MeshNormalMaterial()
+const normalMaterial = new MeshNormalMaterial({ side: DoubleSide })
 
 function Mesh({ url }: MeshProps) {
   const { nodes } = useGLTF(url)
@@ -24,9 +24,10 @@ function Mesh({ url }: MeshProps) {
         const { x, y, z } = props.position
         const position = [x, y, z] as const
 
-        const { x: a, y: b, z: c} = props.rotation
+        const { x: a, y: b, z: c } = props.rotation
         return (
           <mesh
+            key={name}
             geometry={props.geometry}
             material={normalMaterial}
             position={position}
@@ -61,7 +62,7 @@ function Viewer() {
 
       <OrbitControls />
       <GizmoHelper>
-        <GizmoViewport axisColors={['red', 'green', 'blue']}></GizmoViewport>
+        <GizmoViewport axisColors={['#ff004c', '#5fa600', '#0086ea']} />
       </GizmoHelper>
     </Canvas>
   )

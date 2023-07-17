@@ -29,7 +29,15 @@
         ],
         "priority": "default"
       }
-    ]
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "3e.outline",
+          "name": "3e Outline"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",

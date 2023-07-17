@@ -13,7 +13,11 @@ class Doc implements vscode.CustomDocument {
   }
 }
 
-class EditorProvider implements vscode.CustomEditorProvider<Doc> {
+class Obj extends vscode.TreeItem {}
+
+class EditorProvider
+  implements vscode.CustomEditorProvider<Doc>, vscode.TreeDataProvider<Obj>
+{
   private extensionUri: vscode.Uri
 
   constructor(extensionUri: vscode.Uri) {
@@ -90,27 +94,46 @@ class EditorProvider implements vscode.CustomEditorProvider<Doc> {
     webviewPanel.webview.html = html({ css, js })
 
     webviewPanel.webview.onDidReceiveMessage(async (e) => {
-      console.log('onDidReceiveMessage', e)
-      if (e.type === 'ready') {
-        const blob = new Uint8Array(
-          await vscode.workspace.fs.readFile(document.uri)
-        )
-        webviewPanel.webview.postMessage({
-          type: 'glb',
-          blob,
-        })
+      switch (e.type) {
+        case 'ready': {
+          const blob = new Uint8Array(
+            await vscode.workspace.fs.readFile(document.uri)
+          )
+          webviewPanel.webview.postMessage({
+            type: 'glb',
+            blob,
+          })
+        }
+
+        case 'symbols': {
+        }
       }
     })
   }
 
-  private static readonly viewType = '3e.editor'
+  getTreeItem(element: Obj): vscode.TreeItem | Thenable<vscode.TreeItem> {
+    return element
+  }
 
-  static register(ctx: vscode.ExtensionContext): vscode.Disposable {
+  getChildren(element?: Obj | undefined): vscode.ProviderResult<Obj[]> {
+    return Promise.resolve([new Obj('box geo')])
+  }
+
+  private static readonly viewType = '3e.editor'
+  private static readonly outlineType = '3e.outline'
+
+  static register(ctx: vscode.ExtensionContext): vscode.Disposable[] {
     const provider = new EditorProvider(ctx.extensionUri)
-    return vscode.window.registerCustomEditorProvider(
-      EditorProvider.viewType,
-      provider
-    )
+    return [
+      vscode.window.registerCustomEditorProvider(
+        EditorProvider.viewType,
+        provider
+      ),
+      vscode.window.registerTreeDataProvider(
+        EditorProvider.outlineType,
+        provider
+      ),
+    ]
   }
 }
 
