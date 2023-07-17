@@ -37,7 +37,13 @@
           "name": "3e Outline"
         }
       ]
-    }
+    },
+    "viewsWelcome": [
+      {
+        "view": "3e.outline",
+        "contents": "Open a GLB file or select a tab with one opened"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
