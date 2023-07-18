@@ -1,8 +1,10 @@
 # 3e
 
-Next level 3d workflow in VSCode.
+Next level 3d workflow inside VSCode.
 
-This project is not intended to modify 3d objects; like modeling, texturing, UV-unwrapping, etc. It's only a viewer with other helper features so you don't need to open other software (like Blender, etc.) to debug.
+![Screen record](assets/screen-record.gif)
+
+🎺 This project is not intended to modify 3d objects; like modeling, texturing, UV-unwrapping, etc. It's only a viewer with other helper features so you don't need to open other software (like Blender, etc.) to debug.
 
 ## Features
 
@@ -22,7 +24,7 @@ This project is not intended to modify 3d objects; like modeling, texturing, UV-
 - [ ] GLTF formats
 - [ ] FBX/OBJ formats?
 - [ ] Custom HDR
-- [ ] Light theme experience
+- [ ] Light theme experience*
 - [ ] Export to JSX options
 
 > Create an issue for feature request
