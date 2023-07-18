@@ -10,7 +10,7 @@ Next level 3d workflow inside VSCode.
 
 ## Features
 
-- Export to JSX
+- Export to JSX (using [gltfjsx](https://github.com/pmndrs/gltfjsx))
 - Look dev (with NormalMaterial, Basic Material and Textured) + HDRs
 - Wireframe mode
 - Scene outliner
