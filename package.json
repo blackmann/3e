@@ -1,23 +1,20 @@
 {
   "name": "3e",
   "displayName": "3e",
-  "description": "3d workflow in vscode",
+  "description": "Next level 3d workflow inside vscode",
+  "publisher": "degreat",
+  "icon": "assets/3e.png",
+  "repository": "https://github.com/blackmann/3e",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.80.0"
   },
   "categories": [
-    "Other"
+    "Visualization"
   ],
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "3e.helloWorld",
-        "title": "Hello World"
-      }
-    ],
     "customEditors": [
       {
         "viewType": "3e.editor",

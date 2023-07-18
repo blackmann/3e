@@ -11,6 +11,7 @@ Next level 3d workflow inside VSCode.
 - Export to JSX
 - Look dev (with NormalMaterial, Basic Material and Textured) + HDRs
 - Wireframe mode
+- Scene outliner
 
 ## Todo
 
