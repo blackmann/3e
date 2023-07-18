@@ -6,6 +6,8 @@ Next level 3d workflow inside VSCode.
 
 🎺 This project is not intended to modify 3d objects; like modeling, texturing, UV-unwrapping, etc. It's only a viewer with other helper features so you don't need to open other software (like Blender, etc.) to debug.
 
+[Install from VSCode marketplace](https://marketplace.visualstudio.com/items?itemName=degreat.3e)
+
 ## Features
 
 - Export to JSX
