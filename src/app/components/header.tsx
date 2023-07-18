@@ -15,9 +15,16 @@ import React from 'react'
 import Wireframe from '../svgs/Wireframe'
 import clsx from 'clsx'
 import styles from './header.module.css'
+import { vscode } from '../lib/vscode'
 
 function Header() {
   const { wireframe, materialType } = appearance.value
+
+  function exportToJsx() {
+    vscode.postMessage({
+      type: 'export',
+    })
+  }
 
   return (
     <header className={styles.header}>
@@ -69,7 +76,11 @@ function Header() {
       </div>
 
       <div>
-        <VSCodeButton appearance="icon" title="Export to JSX">
+        <VSCodeButton
+          appearance="icon"
+          onClick={exportToJsx}
+          title="GLB to JSX"
+        >
           <Archive />
         </VSCodeButton>
       </div>

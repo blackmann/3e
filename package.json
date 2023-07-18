@@ -47,7 +47,7 @@
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
-    "compile": "NODE_ENV=production node ./build.mjs",
+    "compile": "cross-env NODE_ENV=production node ./build.mjs",
     "watch": "node ./build.mjs --watch",
     "pretest": "yarn run compile && yarn run lint",
     "lint": "eslint src --ext ts",
@@ -65,7 +65,8 @@
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",
     "@vscode/test-electron": "^2.3.2",
-    "esbuild": "^0.18.13",
+    "cross-env": "^7.0.3",
+    "esbuild": "^0.18.14",
     "esbuild-css-modules-plugin": "^2.7.1",
     "eslint": "^8.41.0",
     "eslint-plugin-react": "7.32.2",
@@ -79,10 +80,9 @@
     "@react-three/fiber": "^8.13.5",
     "@vscode/webview-ui-toolkit": "^1.2.2",
     "clsx": "1.2.1",
-    "gltfjsx": "6.1.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "three": "^0.154.0",
+    "three": "^0.152.2",
     "three-stdlib": "^2.23.13"
   }
 }

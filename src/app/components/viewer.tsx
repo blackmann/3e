@@ -15,6 +15,7 @@ import {
 import { Canvas } from '@react-three/fiber'
 import React from 'react'
 import appearance from '../lib/appearance'
+import { setGlb } from '../lib/context'
 import { vscode } from '../lib/vscode'
 
 interface MeshProps {
@@ -33,7 +34,8 @@ const basicMaterial = new MeshStandardMaterial({
 })
 
 function Mesh({ url }: MeshProps) {
-  const { nodes } = useGLTF(url)
+  const gltf = useGLTF(url)
+  const { nodes } = gltf
   const { wireframe, materialType } = appearance.value
   const materialsIndexRef = React.useRef<Record<string, Material>>({})
 
@@ -74,6 +76,7 @@ function Mesh({ url }: MeshProps) {
 
   React.useEffect(() => {
     const sceneNodes = []
+    const { nodes } = gltf
 
     for (const [name, properties] of Object.entries(nodes)) {
       if (properties.type !== 'Mesh') {
@@ -89,11 +92,13 @@ function Mesh({ url }: MeshProps) {
       })
     }
 
+    setGlb(gltf)
+
     vscode.postMessage({
       scene: { nodes: sceneNodes },
       type: 'scene',
     })
-  }, [nodes])
+  }, [gltf])
 
   const showLights =
     !wireframe && ['basic', 'basic-randomized'].includes(materialType)

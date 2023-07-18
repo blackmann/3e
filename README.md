@@ -1,71 +1,36 @@
-# 3e README
+# 3e
 
-This is the README for your extension "3e". After writing up a brief description, we recommend including the following sections.
+Next level 3d workflow in VSCode.
+
+This project is not intended to modify 3d objects; like modeling, texturing, UV-unwrapping, etc. It's only a viewer with other helper features so you don't need to open other software (like Blender, etc.) to debug.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- Export to JSX
+- Look dev (with NormalMaterial, Basic Material and Textured) + HDRs
+- Wireframe mode
 
-For example if there is an image subfolder under your extension project workspace:
+## Todo
 
-\!\[feature X\]\(images/feature-x.png\)
+- [ ] Restore zoom and position on reopen
+- [ ] Camera config (far, near, fov)
+- [ ] Settings (default material color, roughness, etc., camera settings, default components path (relative) etc.)
+- [ ] Wireframe config panel
+- [ ] Material and environment config panels
+- [ ] Outliner-Viewer selection sync
+- [ ] Animation player
+- [ ] GLTF formats
+- [ ] FBX/OBJ formats?
+- [ ] Custom HDR
+- [ ] Light theme experience
+- [ ] Export to JSX options
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+> Create an issue for feature request
 
-## Requirements
+## Philosophy
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+When getting into WebGL (or graphics development), the barrier is too high and thick: you need to know how to use a number of software (Blender, Substance Painter, etc.), understand some jargons/concepts (UV unwrapping, shaders, GLBs/FBX/etc.) and be ready to fail a lot on very trivial things.
 
-## Extension Settings
+> I'm not dismissing that things take time to learn. I'm advocating that we make things easier to learn. No benefit is lost.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+If we can start building [creative/developer] experiences that ease beginner introductions, we'll notice a flood of creative ideas and output. This is evident in the space of frontend development with React, etc. and backend development with Node, etc.

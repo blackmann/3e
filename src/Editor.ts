@@ -100,10 +100,39 @@ class EditorProvider implements vscode.CustomEditorProvider<Doc> {
             blob: document.buffer,
             type: 'glb',
           })
+
+          break;
         }
 
         case 'scene': {
           Outliner.instance?.setScene(document.uri.path, e.scene)
+          break
+        }
+
+        case 'export': {
+          const parts = document.uri.path.split('/')
+          const fn = parts[parts.length - 1]
+
+          // when user switches to .js, we'll export as that
+          const defaultDestination = vscode.Uri.parse(document.uri.path.replace('.glb', '.tsx'))
+
+          console.log(defaultDestination)
+
+          // the UX for file save on Windows is terrible
+          // investigate later
+          vscode.window.showSaveDialog({
+            defaultUri: defaultDestination,
+            filters: {
+              TypeScript: ['.ts', '.tsx'],
+              JavaScript: ['.js', '.jsx'],
+            }
+          }).then((destination) => {
+            if (!destination) {
+              return
+            }
+
+            console.log(destination)
+          })
         }
       }
     })

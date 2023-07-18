@@ -1,16 +1,15 @@
 'use strict'
 
-import { context, build } from 'esbuild'
+import { build, context } from 'esbuild'
 import cssModules from 'esbuild-css-modules-plugin'
 import path from 'path'
 
 /** @type {import('esbuild').BuildOptions} */
 const base = {
   bundle: true,
-  minify: process.env.NODE_ENV === 'production',
-  sourcemap: process.env.NODE_ENV !== 'production',
   format: 'cjs',
   mainFields: ['module', 'main'],
+  minify: process.env.NODE_ENV === 'production',
   plugins: [
     cssModules({
       generateScopedName: function (name, filename, css) {
@@ -22,24 +21,25 @@ const base = {
       },
     }),
   ],
+  sourcemap: process.env.NODE_ENV !== 'production',
 }
 
 /** @type {import('esbuild').BuildOptions} */
 const extensionConfig = {
   ...base,
-  platform: 'node',
   entryPoints: ['./src/extension.ts'],
   external: ['vscode'],
   outdir: './out',
+  platform: 'node',
 }
 
 /** @type {import('esbuild').BuildOptions} */
 const appConfig = {
   ...base,
   entryPoints: ['./src/app/index.tsx'],
-  platform: 'browser',
-  outdir: './out/app',
   minify: true,
+  outdir: './out/app',
+  platform: 'browser',
 }
 
 try {
