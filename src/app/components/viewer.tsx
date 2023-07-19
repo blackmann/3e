@@ -1,10 +1,15 @@
 import {
+  AnimationClip,
+  BufferGeometry,
   DoubleSide,
+  Euler,
   Material,
   MeshBasicMaterial,
   MeshNormalMaterial,
   MeshStandardMaterial,
+  Vector3,
 } from 'three'
+import { Canvas, useThree } from '@react-three/fiber'
 import {
   Environment,
   GizmoHelper,
@@ -12,14 +17,27 @@ import {
   OrbitControls,
   useGLTF,
 } from '@react-three/drei'
-import { Canvas } from '@react-three/fiber'
+import type { GLTF, Geometry } from 'three-stdlib'
+import context, { cameraState, setCameraState, setGlb } from '../lib/context'
 import React from 'react'
 import appearance from '../lib/appearance'
-import { setGlb } from '../lib/context'
 import { vscode } from '../lib/vscode'
 
 interface MeshProps {
   url: string
+}
+
+type GLTFResults = GLTF & {
+  nodes: {
+    [key: string]: {
+      material: Material
+      animations: AnimationClip[]
+      isMesh: boolean
+      geometry: BufferGeometry
+      position: Vector3
+      rotation: Euler
+    }
+  }
 }
 
 const normalMaterial = new MeshNormalMaterial({ side: DoubleSide })
@@ -34,52 +52,70 @@ const basicMaterial = new MeshStandardMaterial({
 })
 
 function Mesh({ url }: MeshProps) {
-  const gltf = useGLTF(url)
+  const gltf = useGLTF(url) as GLTFResults
+  const { camera } = useThree()
   const { nodes } = gltf
   const { wireframe, materialType } = appearance.value
   const materialsIndexRef = React.useRef<Record<string, Material>>({})
 
-  const getMaterial = React.useCallback(
-    (name) => {
-      if (wireframe) {
-        return wireframeMaterial
+  const stateRestoredRef = React.useRef(false)
+
+  function getMaterial(name: string) {
+    if (wireframe) {
+      return wireframeMaterial
+    }
+
+    switch (materialType) {
+      case 'basic': {
+        return basicMaterial
       }
 
-      switch (materialType) {
-        case 'basic': {
-          return basicMaterial
+      case 'basic-randomized': {
+        if (!materialsIndexRef.current[name]) {
+          materialsIndexRef.current[name] = new MeshStandardMaterial({
+            color: randomColor(),
+            roughness: 1,
+            side: DoubleSide,
+          })
         }
 
-        case 'basic-randomized': {
-          if (!materialsIndexRef.current[name]) {
-            materialsIndexRef.current[name] = new MeshStandardMaterial({
-              color: randomColor(),
-              roughness: 1,
-              side: DoubleSide,
-            })
-          }
-
-          return materialsIndexRef.current[name]
-        }
-
-        case 'textured': {
-          nodes[name].material.side = DoubleSide
-          return nodes[name].material
-        }
-
-        default:
-          return normalMaterial
+        return materialsIndexRef.current[name]
       }
-    },
-    [wireframe, materialType]
-  )
+
+      case 'textured': {
+        nodes[name].material.side = DoubleSide
+        return nodes[name].material
+      }
+
+      default:
+        return normalMaterial
+    }
+  }
+
+  React.useEffect(() => {
+    if (stateRestoredRef.current || !cameraState.value) {
+      return
+    }
+
+    const {
+      position: [x, y, z],
+      rotation: [a, b, c],
+    } = cameraState.value
+
+    camera.rotation.set(a, b, c)
+    camera.position.set(x, y, z)
+
+    stateRestoredRef.current = true
+  }, [camera, cameraState.value])
 
   React.useEffect(() => {
     const sceneNodes = []
     const { nodes } = gltf
 
+    DEBUG: console.log('gltf', gltf)
+
     for (const [name, properties] of Object.entries(nodes)) {
-      if (properties.type !== 'Mesh') {
+      if (!properties.isMesh) {
         continue
       }
 
@@ -98,7 +134,15 @@ function Mesh({ url }: MeshProps) {
       scene: { nodes: sceneNodes },
       type: 'scene',
     })
-  }, [gltf])
+
+    const interval = setInterval(() => {
+      const { x, y, z } = camera.position
+      const { x: a, y: b, z: c } = camera.rotation
+      setCameraState({ position: [x, y, z], rotation: [a, b, c] })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [gltf, camera])
 
   const showLights =
     !wireframe && ['basic', 'basic-randomized'].includes(materialType)
@@ -145,21 +189,7 @@ function Mesh({ url }: MeshProps) {
 }
 
 function Viewer() {
-  const [url, setUrl] = React.useState<string>()
-
-  React.useEffect(() => {
-    const fn = (e: MessageEvent) => {
-      if (e.data?.type === 'glb') {
-        const url = URL.createObjectURL(new Blob([e.data.blob as Uint8Array]))
-        setUrl(url)
-      }
-    }
-
-    window.addEventListener('message', fn)
-    vscode.postMessage({ type: 'ready' })
-
-    return () => window.removeEventListener('message', fn)
-  }, [])
+  const url = context.value.blobUrl
 
   return (
     <Canvas>

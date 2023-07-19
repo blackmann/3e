@@ -48,6 +48,7 @@ class Outliner implements vscode.TreeDataProvider<ItemUnion> {
         const item = new ItemUnion(element.props.material.name || '[default]')
 
         item.description = element.props.material.type
+        item.iconPath = new vscode.ThemeIcon('jersey')
         items.push(item)
       }
 
@@ -59,13 +60,19 @@ class Outliner implements vscode.TreeDataProvider<ItemUnion> {
     const scene = this.scenes[this.activeDocPath]
 
     return scene.nodes.map(
-      (node) =>
-        new ItemUnion(
+      (node) => {
+        const item = new ItemUnion(
           node.name,
           undefined,
           node,
           vscode.TreeItemCollapsibleState.Collapsed
         )
+
+        item.iconPath = new vscode.ThemeIcon('symbol-field')
+
+        return item
+      }
+
     )
   }
 

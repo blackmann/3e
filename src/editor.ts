@@ -5,12 +5,12 @@ import { exec } from 'child_process'
 import getUri from './lib/get-uri'
 
 class EditorProvider implements vscode.CustomEditorProvider<Doc> {
-  private extensionUri: vscode.Uri
+  private context: vscode.ExtensionContext
 
   private active?: [vscode.WebviewPanel, Doc]
 
-  constructor(extensionUri: vscode.Uri) {
-    this.extensionUri = extensionUri
+  constructor(context: vscode.ExtensionContext) {
+    this.context = context
   }
 
   private readonly _onDidChangeCustomDocument = new vscode.EventEmitter<
@@ -69,19 +69,21 @@ class EditorProvider implements vscode.CustomEditorProvider<Doc> {
   ): void | Thenable<void> {
     webviewPanel.webview.options = {
       enableScripts: true,
-      localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, 'out')],
+      localResourceRoots: [
+        vscode.Uri.joinPath(this.context.extensionUri, 'out'),
+      ],
     }
 
     const js = getUri(
       webviewPanel.webview,
-      this.extensionUri,
+      this.context.extensionUri,
       'out',
       'app/index.js'
     )
 
     const css = getUri(
       webviewPanel.webview,
-      this.extensionUri,
+      this.context.extensionUri,
       'out',
       'app/index.css'
     )
@@ -92,61 +94,81 @@ class EditorProvider implements vscode.CustomEditorProvider<Doc> {
     this.active = [webviewPanel, document]
     this.refreshOutliner(webviewPanel, document)
 
-    webviewPanel.webview.onDidReceiveMessage(async (e) => {
-      switch (e.type) {
-        case 'ready': {
-          webviewPanel.webview.postMessage({
-            blob: document.buffer,
-            type: 'glb',
-          })
+    webviewPanel.webview.onDidReceiveMessage(
+      async (eventData: { type: string; [key: string]: any }) => {
+        const { type, ...data } = eventData
 
-          break
-        }
-
-        case 'scene': {
-          Outliner.instance?.setScene(document.uri.path, e.scene)
-          break
-        }
-
-        case 'export': {
-          // when user switches to .js, we'll export as that
-          const defaultDestination = vscode.Uri.parse(
-            document.uri.path.replace('.glb', '.tsx')
-          )
-
-          console.log(defaultDestination)
-
-          // the UX for file save on Windows is terrible
-          // investigate later
-          vscode.window
-            .showSaveDialog({
-              defaultUri: defaultDestination,
-              filters: {
-                TypeScript: ['.ts', '.tsx'],
-                JavaScript: ['.js', '.jsx'],
-              },
+        switch (type) {
+          case 'ready': {
+            const previousState = this.context.workspaceState.get(
+              document.uri.path
+            )
+            webviewPanel.webview.postMessage({
+              state: previousState,
+              type: 'restore-state',
             })
-            .then((destination) => {
-              if (!destination) {
-                return
-              }
 
-              const parts = [
-                'npx --yes gltfjsx',
-                document.uri.fsPath,
-                '-o',
-                destination.fsPath,
-              ]
-
-              if (/\.tsx?$/.test(destination.path)) {
-                parts.push('--types')
-              }
-
-              exec(parts.join(' '))
+            webviewPanel.webview.postMessage({
+              blob: document.buffer,
+              type: 'glb',
             })
+
+            break
+          }
+
+          case 'scene': {
+            Outliner.instance?.setScene(document.uri.path, data.scene)
+            break
+          }
+
+          case 'export': {
+            // when user switches to .js, we'll export as that
+            const defaultDestination = vscode.Uri.parse(
+              document.uri.path.replace('.glb', '.tsx')
+            )
+
+            // the UX for file save on Windows is terrible
+            // investigate later
+            vscode.window
+              .showSaveDialog({
+                defaultUri: defaultDestination,
+                filters: {
+                  TypeScript: ['.ts', '.tsx'],
+                  JavaScript: ['.js', '.jsx'],
+                },
+              })
+              .then((destination) => {
+                if (!destination) {
+                  return
+                }
+
+                const parts = [
+                  'npx --yes gltfjsx',
+                  document.uri.fsPath,
+                  '-o',
+                  destination.fsPath,
+                ]
+
+                if (/\.tsx?$/.test(destination.path)) {
+                  parts.push('--types')
+                }
+
+                exec(parts.join(' '))
+              })
+
+            break
+          }
+
+          case 'save-state': {
+            const stateKey = document.uri.path
+            const previousState =
+              this.context.workspaceState.get(stateKey) || {}
+            const newState = { ...previousState, ...data }
+            this.context.workspaceState.update(stateKey, newState)
+          }
         }
       }
-    })
+    )
 
     webviewPanel.onDidChangeViewState((e) => {
       this.refreshOutliner(e.webviewPanel, document)
@@ -165,10 +187,10 @@ class EditorProvider implements vscode.CustomEditorProvider<Doc> {
     }
   }
 
-  private static readonly viewType = '3e.editor'
+  static readonly viewType = '3e.editor'
 
   static register(ctx: vscode.ExtensionContext): vscode.Disposable {
-    const provider = new EditorProvider(ctx.extensionUri)
+    const provider = new EditorProvider(ctx)
     return vscode.window.registerCustomEditorProvider(
       EditorProvider.viewType,
       provider

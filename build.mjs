@@ -4,12 +4,15 @@ import { build, context } from 'esbuild'
 import cssModules from 'esbuild-css-modules-plugin'
 import path from 'path'
 
+const prod = process.env.NODE_ENV === 'production'
+
 /** @type {import('esbuild').BuildOptions} */
 const base = {
   bundle: true,
+  dropLabels: prod ? ['DEBUG'] : [],
   format: 'cjs',
   mainFields: ['module', 'main'],
-  minify: process.env.NODE_ENV === 'production',
+  minify: prod,
   plugins: [
     cssModules({
       generateScopedName: function (name, filename, css) {

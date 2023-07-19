@@ -72,6 +72,12 @@ function Header() {
           <VSCodeOption value="city">City</VSCodeOption>
           <VSCodeOption value="dawn">Dawn</VSCodeOption>
           <VSCodeOption value="forest">Forest</VSCodeOption>
+          <VSCodeOption value="lobby">Lobby</VSCodeOption>
+          <VSCodeOption value="night">Night</VSCodeOption>
+          <VSCodeOption value="park">Park</VSCodeOption>
+          <VSCodeOption value="studio">Studio</VSCodeOption>
+          <VSCodeOption value="sunset">Sunset</VSCodeOption>
+          <VSCodeOption value="warehouse">Warehouse</VSCodeOption>
         </VSCodeDropdown>
       </div>
 
