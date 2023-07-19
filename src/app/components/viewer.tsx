@@ -17,8 +17,9 @@ import {
   OrbitControls,
   useGLTF,
 } from '@react-three/drei'
-import type { GLTF, Geometry } from 'three-stdlib'
-import context, { cameraState, setCameraState, setGlb } from '../lib/context'
+import cameraState, { setCameraState } from '../lib/camera'
+import context, { setGlb } from '../lib/context'
+import type { GLTF } from 'three-stdlib'
 import React from 'react'
 import appearance from '../lib/appearance'
 import { vscode } from '../lib/vscode'
