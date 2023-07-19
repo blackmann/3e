@@ -4,6 +4,11 @@ All notable changes to the "3e" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## [0.0.3] - 29 July 2023
+
+- Sort outline
+- Restore camera zoom and rotation on reopen
+
+## [0.0.2]
 
 - Initial release

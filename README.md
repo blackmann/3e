@@ -17,7 +17,7 @@ Next level 3d workflow inside VSCode.
 
 ## Todo
 
-- [ ] Restore zoom and position on reopen
+- [x] Restore zoom and position on reopen
 - [ ] Camera config (far, near, fov)
 - [ ] Settings (default material color, roughness, etc., camera settings, default components path (relative) etc.)
 - [ ] Wireframe config panel

@@ -132,7 +132,7 @@ function Mesh({ url }: MeshProps) {
     setGlb(gltf)
 
     vscode.postMessage({
-      scene: { nodes: sceneNodes },
+      scene: { nodes: sceneNodes.sort((a, b) => a.name.localeCompare(b.name)) },
       type: 'scene',
     })
 
