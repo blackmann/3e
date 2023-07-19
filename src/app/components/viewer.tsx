@@ -7,6 +7,7 @@ import {
   MeshBasicMaterial,
   MeshNormalMaterial,
   MeshStandardMaterial,
+  Object3D,
   Vector3,
 } from 'three'
 import { Canvas, useThree } from '@react-three/fiber'
@@ -24,20 +25,26 @@ import React from 'react'
 import appearance from '../lib/appearance'
 import { vscode } from '../lib/vscode'
 
-interface MeshProps {
+interface RenderMeshProps {
   url: string
+}
+
+interface RenderNode {
+  animations: AnimationClip[]
+  geometry?: BufferGeometry
+  children?: RenderNode[]
+  isMesh: boolean
+  material: Material
+  name: string
+  parent?: Object3D
+  position: Vector3
+  rotation: Euler
+  type: 'Mesh' | 'Object3D' | (string & {})
 }
 
 type GLTFResults = GLTF & {
   nodes: {
-    [key: string]: {
-      material: Material
-      animations: AnimationClip[]
-      isMesh: boolean
-      geometry: BufferGeometry
-      position: Vector3
-      rotation: Euler
-    }
+    [key: string]: RenderNode
   }
 }
 
@@ -52,16 +59,55 @@ const basicMaterial = new MeshStandardMaterial({
   side: DoubleSide,
 })
 
-function Mesh({ url }: MeshProps) {
+interface ObjectRenderProps {
+  name: string
+  properties: RenderNode
+  getMaterial: (name: string) => Material
+}
+
+function ObjectRender({ getMaterial, name, properties }: ObjectRenderProps) {
+  const { x, y, z } = properties.position
+  const position = [x, y, z] as const
+
+  const { x: a, y: b, z: c } = properties.rotation
+  const commonProps = {
+    key: name,
+    parent: properties.parent,
+    position: position,
+    rotation: new Euler(a, b, c),
+  }
+
+  switch (properties.type) {
+    case 'SkinnedMesh':
+    case 'Mesh': {
+      return (
+        <mesh
+          {...commonProps}
+          geometry={properties.geometry}
+          material={getMaterial(name)}
+        />
+      )
+    }
+
+    case 'Object3D': {
+      return <object3D {...commonProps} />
+    }
+
+    default: {
+      DEBUG: console.warn(`type ${properties.type} unhandled`)
+      DEBUG: console.log(properties)
+      return null
+    }
+  }
+}
+
+function Mesh({ url }: RenderMeshProps) {
   const gltf = useGLTF(url) as GLTFResults
-  const { camera } = useThree()
   const { nodes } = gltf
   const { wireframe, materialType } = appearance.value
   const materialsIndexRef = React.useRef<Record<string, Material>>({})
 
-  const stateRestoredRef = React.useRef(false)
-
-  function getMaterial(name: string) {
+  const getMaterial = React.useCallback((name: string) => {
     if (wireframe) {
       return wireframeMaterial
     }
@@ -91,23 +137,7 @@ function Mesh({ url }: MeshProps) {
       default:
         return normalMaterial
     }
-  }
-
-  React.useEffect(() => {
-    if (stateRestoredRef.current || !cameraState.value) {
-      return
-    }
-
-    const {
-      position: [x, y, z],
-      rotation: [a, b, c],
-    } = cameraState.value
-
-    camera.rotation.set(a, b, c)
-    camera.position.set(x, y, z)
-
-    stateRestoredRef.current = true
-  }, [camera, cameraState.value])
+  }, [wireframe, materialType])
 
   React.useEffect(() => {
     const sceneNodes = []
@@ -135,15 +165,7 @@ function Mesh({ url }: MeshProps) {
       scene: { nodes: sceneNodes.sort((a, b) => a.name.localeCompare(b.name)) },
       type: 'scene',
     })
-
-    const interval = setInterval(() => {
-      const { x, y, z } = camera.position
-      const { x: a, y: b, z: c } = camera.rotation
-      setCameraState({ position: [x, y, z], rotation: [a, b, c] })
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [gltf, camera])
+  }, [gltf])
 
   const showLights =
     !wireframe && ['basic', 'basic-randomized'].includes(materialType)
@@ -154,22 +176,8 @@ function Mesh({ url }: MeshProps) {
     <>
       <group>
         {Object.entries(nodes).map(([name, properties]) => {
-          if (!properties.geometry) {
-            return null
-          }
-
-          const { x, y, z } = properties.position
-          const position = [x, y, z] as const
-
-          const { x: a, y: b, z: c } = properties.rotation
           return (
-            <mesh
-              geometry={properties.geometry}
-              key={name}
-              material={getMaterial(name)}
-              position={position}
-              rotation={[a, b, c]}
-            ></mesh>
+            <ObjectRender key={name} {...{ getMaterial, name, properties }} />
           )
         })}
       </group>
@@ -189,12 +197,48 @@ function Mesh({ url }: MeshProps) {
   )
 }
 
+function _Delegate({ url }: RenderMeshProps) {
+  const { camera } = useThree()
+  const stateRestoredRef = React.useRef(false)
+
+  React.useEffect(() => {
+    const state = cameraState.peek()
+    if (stateRestoredRef.current || !state) {
+      return
+    }
+
+    const {
+      position: [x, y, z],
+      rotation: [a, b, c],
+    } = state
+
+    camera.rotation.set(a, b, c)
+    camera.position.set(x, y, z)
+
+    stateRestoredRef.current = true
+  }, [camera])
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      const { x, y, z } = camera.position
+      const { x: a, y: b, z: c } = camera.rotation
+
+      // maybe call this when a change actually occurs?
+      setCameraState({ position: [x, y, z], rotation: [a, b, c] })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [camera])
+
+  return <Mesh url={url} />
+}
+
 function Viewer() {
   const url = context.value.blobUrl
 
   return (
     <Canvas>
-      {url && <Mesh url={url} />}
+      {url && <_Delegate url={url} />}
 
       <OrbitControls />
       <GizmoHelper>
