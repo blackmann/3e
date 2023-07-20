@@ -25,7 +25,12 @@ function Editor() {
       return
     }
 
-    setController(new AnimationController(glb.animations, glb.scene))
+    const controller = new AnimationController(glb.animations, glb.scene)
+    setController(controller)
+
+    return () => {
+      controller.dispose()
+    }
   }, [glb])
 
   return (

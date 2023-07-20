@@ -30,7 +30,11 @@ function Pad({ label, width }: PadProps) {
   )
 }
 
-function Sheet() {
+interface SheetProps {
+  controller: AnimationController
+}
+
+function Sheet({ controller }: SheetProps) {
   return (
     <div className={styles.sheet}>
       <div className={styles.pads}>
@@ -48,8 +52,9 @@ interface Props {
   controller: AnimationController
 }
 
-function Timeline({  controller }: Props) {
+function Timeline({ controller }: Props) {
   const animations = controller.animations
+
   return (
     <div className={styles.timeline}>
       <header className={styles.header}>
@@ -75,7 +80,12 @@ function Timeline({  controller }: Props) {
 
         <div className={styles.playbackControls}>
           <div className={styles.controls}>
-            <VSCodeButton appearance="icon" className={styles.button}>
+            <VSCodeButton
+              appearance="icon"
+              className={styles.button}
+              onClick={() => controller.seekToStart()}
+              title="Move to start"
+            >
               <span className="codicon codicon-debug-reverse-continue"></span>
             </VSCodeButton>
 
@@ -107,7 +117,7 @@ function Timeline({  controller }: Props) {
         </div>
       </header>
 
-      <Sheet />
+      <Sheet controller={controller} />
     </div>
   )
 }
