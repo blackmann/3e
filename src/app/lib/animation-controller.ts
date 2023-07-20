@@ -86,7 +86,7 @@ class AnimationController {
       }
     }
 
-    this.state.value = { ...this.state.value, duration }
+    this.state.value = { ...this.state.value, currentTime: 0, duration }
     this.mixer.setTime(0)
   }
 
