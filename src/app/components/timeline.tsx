@@ -1,16 +1,12 @@
+import AnimationController, { ALL_CLIPS } from '../lib/animation-controller'
 import {
   VSCodeButton,
   VSCodeDropdown,
   VSCodeOption,
 } from '@vscode/webview-ui-toolkit/react'
-import { AnimationClip } from 'three'
 import React from 'react'
 import clsx from 'clsx'
 import styles from './timeline.module.css'
-
-interface Props {
-  animations: AnimationClip[]
-}
 
 function Cursor() {
   return (
@@ -48,16 +44,30 @@ function Sheet() {
   )
 }
 
-function Timeline({ animations }: Props) {
+interface Props {
+  controller: AnimationController
+}
+
+function Timeline({  controller }: Props) {
+  const animations = controller.animations
   return (
     <div className={styles.timeline}>
       <header className={styles.header}>
         <div>
-          <VSCodeDropdown>
-            <VSCodeOption>All clips</VSCodeOption>
-            <VSCodeOption>CylinderAction</VSCodeOption>
-            <VSCodeOption>ConeAction</VSCodeOption>
+          <VSCodeDropdown
+            onChange={(e) =>
+              controller.setClip((e.target as HTMLSelectElement).value)
+            }
+            value={controller.state.value.clip}
+          >
+            <VSCodeOption value={ALL_CLIPS}>All clips</VSCodeOption>
+            {animations.map((clip) => (
+              <VSCodeOption key={clip.name} value={clip.name}>
+                {clip.name}
+              </VSCodeOption>
+            ))}
           </VSCodeDropdown>
+
           <VSCodeButton appearance="icon" title="Copy clip name">
             <span className="codicon codicon-copy"></span>
           </VSCodeButton>
@@ -71,14 +81,20 @@ function Timeline({ animations }: Props) {
 
             <VSCodeButton
               appearance="icon"
-              className={clsx(styles.playbackControl, styles.active)}
+              className={clsx(styles.playbackControl, {
+                [styles.active]: controller.state.value.playing,
+              })}
+              onClick={() => controller.togglePlay()}
             >
               <span className="codicon codicon-play"></span>
             </VSCodeButton>
 
             <VSCodeButton
               appearance="icon"
-              className={styles.button}
+              className={clsx(styles.playbackControl, {
+                [styles.active]: controller.state.value.loop,
+              })}
+              onClick={() => controller.toggleLoop()}
               title="Loop"
             >
               <span className="codicon codicon-debug-restart"></span>
@@ -86,7 +102,9 @@ function Timeline({ animations }: Props) {
           </div>
         </div>
 
-        <div className={styles.timeInfo}>320s</div>
+        <div className={styles.timeInfo}>
+          {Math.ceil(controller.state.value.duration)}
+        </div>
       </header>
 
       <Sheet />

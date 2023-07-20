@@ -22,6 +22,7 @@ import type { GLTF } from 'three-stdlib'
 import React from 'react'
 import appearance from '../lib/appearance'
 import { vscode } from '../lib/vscode'
+import AnimationController from '../lib/animation-controller'
 
 interface RenderMeshProps {
   url: string
@@ -72,7 +73,7 @@ function ObjectRender({ getMaterial, scene, nodes }: ObjectRenderProps) {
 
 function Mesh({ url }: RenderMeshProps) {
   const gltf = useGLTF(url) as GLTFResults
-  const { nodes, scene, animations } = gltf
+  const { nodes, scene } = gltf
   const { wireframe, materialType } = appearance.value
 
   const originalMaterialsIndexRef = React.useRef<
@@ -149,20 +150,6 @@ function Mesh({ url }: RenderMeshProps) {
     })
   }, [nodes, scene])
 
-  React.useEffect(() => {
-    const mixer = new THREE.AnimationMixer(scene)
-    animations.forEach((clip) => {
-      console.log('animation clip', clip)
-      mixer.clipAction(clip).play()
-    })
-
-    mixerRef.current = mixer
-  }, [scene, animations])
-
-  useFrame(({}, delta) => {
-    // mixerRef.current?.update(delta)
-  })
-
   const showLights =
     !wireframe && ['basic', 'basic-randomized'].includes(materialType)
 
@@ -187,7 +174,7 @@ function Mesh({ url }: RenderMeshProps) {
   )
 }
 
-function _Delegate({ url }: RenderMeshProps) {
+function _Delegate({ url, controller }: RenderMeshProps & Props) {
   const { camera } = useThree()
   const stateRestoredRef = React.useRef(false)
 
@@ -220,15 +207,23 @@ function _Delegate({ url }: RenderMeshProps) {
     return () => clearInterval(interval)
   }, [camera])
 
+  useFrame(({}, delta) => {
+    controller?.forward(delta)
+  })
+
   return <Mesh url={url} />
 }
 
-function Viewer() {
+interface Props {
+  controller?: AnimationController
+}
+
+function Viewer({ controller }: Props) {
   const url = context.value.blobUrl
 
   return (
     <Canvas>
-      {url && <_Delegate url={url} />}
+      {url && <_Delegate controller={controller} url={url} />}
 
       <OrbitControls />
       <GizmoHelper>
