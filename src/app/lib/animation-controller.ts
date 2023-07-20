@@ -7,8 +7,6 @@ class AnimationController {
   private clipActions: [AnimationClip, AnimationAction][] = []
   private mixer: AnimationMixer
 
-  private dirty = true
-
   animations: AnimationClip[]
   state = signal({
     clip: ALL_CLIPS,
@@ -25,38 +23,19 @@ class AnimationController {
     for (const clip of animations) {
       this.clipActions.push([clip, this.mixer.clipAction(clip)])
     }
+
+    this.resetMixer()
   }
 
   togglePlay() {
     const playing = !this.state.peek().playing
-
-    if (playing) {
-      if (this.dirty) {
-        this.mixer.setTime(0)
-
-        let duration = 0
-        for (const [clip, action] of this.clipActions) {
-          const selectedClip = this.state.peek().clip
-          const play = selectedClip === ALL_CLIPS || selectedClip === clip.name
-          if (play) {
-            action.play()
-            duration = Math.max(duration, clip.duration)
-          } else {
-            action.stop()
-          }
-        }
-
-        this.state.value = { ...this.state.value, duration }
-
-        this.dirty = false
-      }
-    }
 
     this.setPlaying(playing)
   }
 
   seekToStart() {
     this.mixer.setTime(0)
+    this.state.value = {...this.state.value, currentTime: 0}
   }
 
   private setPlaying(playing: boolean) {
@@ -68,7 +47,6 @@ class AnimationController {
       return
     }
 
-    // REDO: put check inside if (!loop...)
     const { loop, duration } = this.state.peek()
     const normalizedTime = this.mixer.time % duration
     const ends = normalizedTime + delta > duration
@@ -93,9 +71,28 @@ class AnimationController {
     this.state.value = { ...this.state.value, loop }
   }
 
+  private resetMixer() {
+    this.mixer.setTime(0)
+
+    let duration = 0
+    for (const [clip, action] of this.clipActions) {
+      const selectedClip = this.state.peek().clip
+      const play = selectedClip === ALL_CLIPS || selectedClip === clip.name
+      if (play) {
+        action.play()
+        duration = Math.max(duration, clip.duration)
+      } else {
+        action.stop()
+      }
+    }
+
+    this.state.value = { ...this.state.value, duration }
+    this.mixer.setTime(0)
+  }
+
   setClip(name: string) {
     this.state.value = { ...this.state.value, clip: name, playing: false }
-    this.dirty = true
+    this.resetMixer()
   }
 
   dispose() {

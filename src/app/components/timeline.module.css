@@ -9,6 +9,7 @@
 .header {
   padding: 0.5rem;
   display: flex;
+  align-items: center;
 }
 
 .header>* {
@@ -38,9 +39,25 @@
   justify-content: end;
 }
 
+.time > * {
+  padding: 0.15rem 0.5rem;
+}
+
+.time :first-child {
+  background-color: var(--background);
+  border-top-left-radius: 0.25rem;
+  border-bottom-left-radius: 0.25rem;
+  color: var(--vscode-disabledForeground);
+}
+
+.time :nth-child(2) {
+  background-color: var(--dropdown-background);
+  border-top-right-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+}
+
 .sheet {
   flex: 1;
-  background-color: var(--background);
   height: 0;
   overflow-x: auto;
   overflow-y: hidden;
@@ -49,10 +66,10 @@
 
 .cursor {
   height: 100%;
-  width: var(--width);
+  width: 0;
   position: relative;
   top: -100%;
-  left: 3rem;
+  left: 150px;
 }
 
 .cursorHandle {
@@ -82,11 +99,21 @@
 
 .pad {
   border-left: 2px solid var(--vscode-sideBar-background);
+  background-color: var(--background);
+}
+
+.pad.inactive {
+  background-color: var(--background);
+}
+
+.pad.inactive > .padLabel {
+  color: var(--vscode-disabledForeground);
 }
 
 .padLabel {
   display: inline-block;
-  transform: translateX(-50%);
+  transform: translateX(calc(-50% - 1px));
   background-color: var(--background);
   color: var(--vscode-breadcrumb-foreground);
+  padding-bottom: 0.25rem;
 }

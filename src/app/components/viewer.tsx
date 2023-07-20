@@ -18,11 +18,11 @@ import {
 } from '@react-three/drei'
 import cameraState, { setCameraState } from '../lib/camera'
 import context, { setGlb } from '../lib/context'
+import AnimationController from '../lib/animation-controller'
 import type { GLTF } from 'three-stdlib'
 import React from 'react'
 import appearance from '../lib/appearance'
 import { vscode } from '../lib/vscode'
-import AnimationController from '../lib/animation-controller'
 
 interface RenderMeshProps {
   url: string
