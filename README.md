@@ -23,7 +23,7 @@ Next level 3d workflow inside VSCode.
 - [ ] Wireframe config panel
 - [ ] Material and environment config panels
 - [ ] Outliner-Viewer selection sync
-- [ ] Animation player
+- [x] Animation player
 - [ ] GLTF formats
 - [ ] FBX/OBJ formats?
 - [ ] Custom HDR
