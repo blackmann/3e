@@ -40,6 +40,9 @@ const extensionConfig = {
 const appConfig = {
   ...base,
   entryPoints: ['./src/app/index.tsx'],
+  loader: {
+    '.ttf': 'dataurl',
+  },
   minify: true,
   outdir: './out/app',
   platform: 'browser',

@@ -75,6 +75,7 @@
     "@preact/signals-react": "1.2.2",
     "@react-three/drei": "^9.78.2",
     "@react-three/fiber": "^8.13.5",
+    "@vscode/codicons": "^0.0.33",
     "@vscode/webview-ui-toolkit": "^1.2.2",
     "clsx": "1.2.1",
     "react": "^18.2.0",

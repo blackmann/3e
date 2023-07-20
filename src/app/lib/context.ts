@@ -1,16 +1,16 @@
+import { GLTF } from 'three-stdlib'
 import { signal } from '@preact/signals-react'
-import { vscode } from './vscode'
 
 const context = signal({
   blobUrl: <string | undefined>undefined,
-  glb: <any>null,
+  glb: <GLTF | null>null,
 })
 
 function setBlobUrl(url: string) {
   context.value = { ...context.value, blobUrl: url }
 }
 
-function setGlb(glb: any) {
+function setGlb(glb: GLTF) {
   context.value = { ...context.value, glb }
 }
 

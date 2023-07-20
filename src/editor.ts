@@ -74,19 +74,23 @@ class EditorProvider implements vscode.CustomEditorProvider<Doc> {
       ],
     }
 
-    const js = getUri(
-      webviewPanel.webview,
-      this.context.extensionUri,
-      'out',
-      'app/index.js'
-    )
+    const js = [
+      getUri(
+        webviewPanel.webview,
+        this.context.extensionUri,
+        'out',
+        'app/index.js'
+      ),
+    ]
 
-    const css = getUri(
-      webviewPanel.webview,
-      this.context.extensionUri,
-      'out',
-      'app/index.css'
-    )
+    const css = [
+      getUri(
+        webviewPanel.webview,
+        this.context.extensionUri,
+        'out',
+        'app/index.css'
+      )
+    ]
 
     webviewPanel.webview.html = html({ css, js })
 
@@ -198,18 +202,21 @@ class EditorProvider implements vscode.CustomEditorProvider<Doc> {
   }
 }
 
-function html({ css, js }: Record<string, vscode.Uri>) {
+function html({ css, js }: Record<string, vscode.Uri[]>) {
+  const allCss = css.map((c) => `<link rel="stylesheet" href="${c}" />`).join('\n')
+  const allJs = js.map((j) => `<script src="${j}"></script>`).join('\n')
+
   return /* html */ `
   <!DOCTYPE html>
   <html lang="en">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width,initial-scale=1.0">
-      <link rel="stylesheet" href="${css}" />
+      ${allCss}
     </head>
     <body>
       <div id="app"></div>
-      <script src="${js}"></script>
+      ${allJs}
     </body>
   </html>
       `

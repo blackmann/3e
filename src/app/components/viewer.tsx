@@ -1,4 +1,5 @@
-import { Canvas, useThree } from '@react-three/fiber'
+import * as THREE from 'three'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import {
   DoubleSide,
   Group,
@@ -71,15 +72,19 @@ function ObjectRender({ getMaterial, scene, nodes }: ObjectRenderProps) {
 
 function Mesh({ url }: RenderMeshProps) {
   const gltf = useGLTF(url) as GLTFResults
-  const { nodes, scene } = gltf
+  const { nodes, scene, animations } = gltf
   const { wireframe, materialType } = appearance.value
-  const originalMaterialsIndex = React.useRef<Record<string, Material | undefined>>({})
+
+  const originalMaterialsIndexRef = React.useRef<
+    Record<string, Material | undefined>
+  >({})
   const materialsIndexRef = React.useRef<Record<string, Material>>({})
+  const mixerRef = React.useRef<THREE.AnimationMixer>()
 
   const getMaterial = React.useCallback(
     (name: string) => {
-      if (!originalMaterialsIndex.current[name]) {
-        originalMaterialsIndex.current[name] = nodes[name].material
+      if (!originalMaterialsIndexRef.current[name]) {
+        originalMaterialsIndexRef.current[name] = nodes[name].material
       }
 
       if (wireframe) {
@@ -104,19 +109,18 @@ function Mesh({ url }: RenderMeshProps) {
         }
 
         case 'textured': {
-          return originalMaterialsIndex.current[name]
+          return originalMaterialsIndexRef.current[name]
         }
 
         default:
           return normalMaterial
       }
     },
-    [wireframe, materialType]
+    [wireframe, materialType, nodes]
   )
 
   React.useEffect(() => {
     const sceneNodes = []
-    const { nodes, scene } = gltf
 
     DEBUG: console.log('gltf', gltf)
 
@@ -125,7 +129,7 @@ function Mesh({ url }: RenderMeshProps) {
         continue
       }
 
-      const material = originalMaterialsIndex.current[name]
+      const material = originalMaterialsIndexRef.current[name]
 
       sceneNodes.push({
         material: {
@@ -143,7 +147,21 @@ function Mesh({ url }: RenderMeshProps) {
       scene: { nodes: sceneNodes.sort((a, b) => a.name.localeCompare(b.name)) },
       type: 'scene',
     })
-  }, [gltf])
+  }, [nodes, scene])
+
+  React.useEffect(() => {
+    const mixer = new THREE.AnimationMixer(scene)
+    animations.forEach((clip) => {
+      console.log('animation clip', clip)
+      mixer.clipAction(clip).play()
+    })
+
+    mixerRef.current = mixer
+  }, [scene, animations])
+
+  useFrame(({}, delta) => {
+    // mixerRef.current?.update(delta)
+  })
 
   const showLights =
     !wireframe && ['basic', 'basic-randomized'].includes(materialType)

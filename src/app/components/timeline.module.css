@@ -1,3 +1,92 @@
 .timeline {
-  height: 4rem;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--vscode-sideBar-background);
+  border-top: 1px solid var(--vscode-panel-border);
+  height: 6rem;
+}
+
+.header {
+  padding: 0.5rem;
+  display: flex;
+}
+
+.header>* {
+  flex: 1;
+}
+
+.button {
+  font-size: 1.2rem;
+}
+
+.controls> :not(:last-child) {
+  margin-right: 0.25rem;
+}
+
+.playbackControl.active {
+  background-color: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
+}
+
+.playbackControls {
+  display: flex;
+  justify-content: center;
+}
+
+.timeInfo {
+  display: flex;
+  justify-content: end;
+}
+
+.sheet {
+  flex: 1;
+  background-color: var(--background);
+  height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  user-select: none;
+}
+
+.cursor {
+  height: 100%;
+  width: var(--width);
+  position: relative;
+  top: -100%;
+  left: 3rem;
+}
+
+.cursorHandle {
+  background-color: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
+  border-radius: 0.25rem;
+  height: 16px;
+  text-align: center;
+  z-index: 10;
+  display: inline-block;
+  padding: 0 0.5rem;
+  transform: translateX(-50%);
+}
+
+.cursorTail {
+  height: calc(100% - 16px);
+  background-color: var(--vscode-badge-background);
+  width: 2px;
+}
+
+.pads {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-shrink: 0;
+}
+
+.pad {
+  border-left: 2px solid var(--vscode-sideBar-background);
+}
+
+.padLabel {
+  display: inline-block;
+  transform: translateX(-50%);
+  background-color: var(--background);
+  color: var(--vscode-breadcrumb-foreground);
 }
