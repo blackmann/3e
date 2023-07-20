@@ -5,7 +5,7 @@
   "publisher": "degreat",
   "icon": "assets/3e.png",
   "repository": "https://github.com/blackmann/3e",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "engines": {
     "vscode": "^1.80.0"
   },

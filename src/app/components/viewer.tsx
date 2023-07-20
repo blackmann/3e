@@ -1,16 +1,13 @@
+import { Canvas, useThree } from '@react-three/fiber'
 import {
-  AnimationClip,
-  BufferGeometry,
   DoubleSide,
-  Euler,
+  Group,
   Material,
   MeshBasicMaterial,
   MeshNormalMaterial,
   MeshStandardMaterial,
   Object3D,
-  Vector3,
 } from 'three'
-import { Canvas, useThree } from '@react-three/fiber'
 import {
   Environment,
   GizmoHelper,
@@ -29,22 +26,11 @@ interface RenderMeshProps {
   url: string
 }
 
-interface RenderNode {
-  animations: AnimationClip[]
-  geometry?: BufferGeometry
-  children?: RenderNode[]
-  isMesh: boolean
-  material: Material
-  name: string
-  parent?: Object3D
-  position: Vector3
-  rotation: Euler
-  type: 'Mesh' | 'Object3D' | (string & {})
-}
+type ParsedObject3D = Object3D & { material?: Material }
 
 type GLTFResults = GLTF & {
   nodes: {
-    [key: string]: RenderNode
+    [key: string]: ParsedObject3D
   }
 }
 
@@ -60,102 +46,94 @@ const basicMaterial = new MeshStandardMaterial({
 })
 
 interface ObjectRenderProps {
-  name: string
-  properties: RenderNode
-  getMaterial: (name: string) => Material
+  scene: Group
+  getMaterial: (name: string) => Material | undefined
+  nodes: Record<string, ParsedObject3D>
 }
 
-function ObjectRender({ getMaterial, name, properties }: ObjectRenderProps) {
-  const { x, y, z } = properties.position
-  const position = [x, y, z] as const
+function ObjectRender({ getMaterial, scene, nodes }: ObjectRenderProps) {
+  const { scene: appScene } = useThree()
 
-  const { x: a, y: b, z: c } = properties.rotation
-  const commonProps = {
-    key: name,
-    parent: properties.parent,
-    position: position,
-    rotation: new Euler(a, b, c),
-  }
+  React.useEffect(() => {
+    Object.values(nodes).forEach((node) => {
+      node.material = getMaterial(node.name)
+    })
 
-  switch (properties.type) {
-    case 'SkinnedMesh':
-    case 'Mesh': {
-      return (
-        <mesh
-          {...commonProps}
-          geometry={properties.geometry}
-          material={getMaterial(name)}
-        />
-      )
+    appScene.add(scene)
+
+    return () => {
+      appScene.remove(scene)
     }
+  }, [getMaterial, scene])
 
-    case 'Object3D': {
-      return <object3D {...commonProps} />
-    }
-
-    default: {
-      DEBUG: console.warn(`type ${properties.type} unhandled`)
-      DEBUG: console.log(properties)
-      return null
-    }
-  }
+  return null
 }
 
 function Mesh({ url }: RenderMeshProps) {
   const gltf = useGLTF(url) as GLTFResults
-  const { nodes } = gltf
+  const { nodes, scene } = gltf
   const { wireframe, materialType } = appearance.value
+  const originalMaterialsIndex = React.useRef<Record<string, Material | undefined>>({})
   const materialsIndexRef = React.useRef<Record<string, Material>>({})
 
-  const getMaterial = React.useCallback((name: string) => {
-    if (wireframe) {
-      return wireframeMaterial
-    }
-
-    switch (materialType) {
-      case 'basic': {
-        return basicMaterial
+  const getMaterial = React.useCallback(
+    (name: string) => {
+      if (!originalMaterialsIndex.current[name]) {
+        originalMaterialsIndex.current[name] = nodes[name].material
       }
 
-      case 'basic-randomized': {
-        if (!materialsIndexRef.current[name]) {
-          materialsIndexRef.current[name] = new MeshStandardMaterial({
-            color: randomColor(),
-            roughness: 1,
-            side: DoubleSide,
-          })
+      if (wireframe) {
+        return wireframeMaterial
+      }
+
+      switch (materialType) {
+        case 'basic': {
+          return basicMaterial
         }
 
-        return materialsIndexRef.current[name]
-      }
+        case 'basic-randomized': {
+          if (!materialsIndexRef.current[name]) {
+            materialsIndexRef.current[name] = new MeshStandardMaterial({
+              color: randomColor(),
+              roughness: 1,
+              side: DoubleSide,
+            })
+          }
 
-      case 'textured': {
-        nodes[name].material.side = DoubleSide
-        return nodes[name].material
-      }
+          return materialsIndexRef.current[name]
+        }
 
-      default:
-        return normalMaterial
-    }
-  }, [wireframe, materialType])
+        case 'textured': {
+          return originalMaterialsIndex.current[name]
+        }
+
+        default:
+          return normalMaterial
+      }
+    },
+    [wireframe, materialType]
+  )
 
   React.useEffect(() => {
     const sceneNodes = []
-    const { nodes } = gltf
+    const { nodes, scene } = gltf
 
     DEBUG: console.log('gltf', gltf)
 
     for (const [name, properties] of Object.entries(nodes)) {
-      if (!properties.isMesh) {
+      if (properties.uuid === scene.uuid) {
         continue
       }
 
+      const material = originalMaterialsIndex.current[name]
+
       sceneNodes.push({
         material: {
-          name: properties.material.name,
-          type: properties.material.type,
+          name: material?.name,
+          type: material?.type,
         },
         name,
+        type: properties.type,
       })
     }
 
@@ -174,13 +152,7 @@ function Mesh({ url }: RenderMeshProps) {
 
   return (
     <>
-      <group>
-        {Object.entries(nodes).map(([name, properties]) => {
-          return (
-            <ObjectRender key={name} {...{ getMaterial, name, properties }} />
-          )
-        })}
-      </group>
+      <ObjectRender getMaterial={getMaterial} nodes={nodes} scene={scene} />
 
       {showLights && (
         <>
