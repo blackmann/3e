@@ -6,12 +6,14 @@
         "sourceType": "module"
     },
     "extends": [
-        "plugin:react/recommended"
+        "plugin:react/recommended",
+        "preact"
     ],
     "plugins": [
         "@typescript-eslint"
     ],
     "rules": {
+        "no-unused-vars": "off",
         "curly": "warn",
         "eqeqeq": "warn",
         "no-throw-literal": "warn",

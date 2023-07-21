@@ -1,4 +1,3 @@
-import * as THREE from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import {
   DoubleSide,
@@ -7,33 +6,21 @@ import {
   MeshBasicMaterial,
   MeshNormalMaterial,
   MeshStandardMaterial,
-  Object3D,
 } from 'three'
 import {
   Environment,
   GizmoHelper,
   GizmoViewport,
   OrbitControls,
-  useGLTF,
 } from '@react-three/drei'
 import cameraState, { saveCameraState } from '../lib/camera'
-import context, { setGlb } from '../lib/context'
-import AnimationController from '../lib/animation-controller'
-import type { GLTF } from 'three-stdlib'
+import context, { useReadyContext } from '../lib/context'
+import type { ParsedObject3D } from '../../types'
 import React from 'react'
 import appearance from '../lib/appearance'
-import { vscode } from '../lib/vscode'
 
 interface RenderMeshProps {
   url: string
-}
-
-type ParsedObject3D = Object3D & { material?: Material }
-
-type GLTFResults = GLTF & {
-  nodes: {
-    [key: string]: ParsedObject3D
-  }
 }
 
 const normalMaterial = new MeshNormalMaterial({ side: DoubleSide })
@@ -66,27 +53,22 @@ function ObjectRender({ getMaterial, scene, nodes }: ObjectRenderProps) {
     return () => {
       appScene.remove(scene)
     }
-  }, [getMaterial, scene])
+  }, [appScene, getMaterial, nodes, scene])
 
   return null
 }
 
-function Mesh({ url }: RenderMeshProps) {
-  const gltf = useGLTF(url) as GLTFResults
-  const { nodes, scene } = gltf
+function Mesh() {
+  const {
+    nodes,
+    scene,
+    __originalMaterials: originalMaterials,
+  } = context.value.glb!
   const { wireframe, materialType } = appearance.value
-
-  const originalMaterialsIndexRef = React.useRef<
-    Record<string, Material | undefined>
-  >({})
-  const materialsIndexRef = React.useRef<Record<string, Material>>({})
+  const randomizedMaterialsIndexRef = React.useRef<Record<string, Material>>({})
 
   const getMaterial = React.useCallback(
     (name: string) => {
-      if (!originalMaterialsIndexRef.current[name]) {
-        originalMaterialsIndexRef.current[name] = nodes[name].material
-      }
-
       if (wireframe) {
         return wireframeMaterial
       }
@@ -97,57 +79,28 @@ function Mesh({ url }: RenderMeshProps) {
         }
 
         case 'basic-randomized': {
-          if (!materialsIndexRef.current[name]) {
-            materialsIndexRef.current[name] = new MeshStandardMaterial({
-              color: randomColor(),
-              roughness: 1,
-              side: DoubleSide,
-            })
+          if (!randomizedMaterialsIndexRef.current[name]) {
+            randomizedMaterialsIndexRef.current[name] =
+              new MeshStandardMaterial({
+                color: randomColor(),
+                roughness: 1,
+                side: DoubleSide,
+              })
           }
 
-          return materialsIndexRef.current[name]
+          return randomizedMaterialsIndexRef.current[name]
         }
 
         case 'textured': {
-          return originalMaterialsIndexRef.current[name]
+          return originalMaterials?.[name]
         }
 
         default:
           return normalMaterial
       }
     },
-    [wireframe, materialType, nodes]
+    [wireframe, materialType, originalMaterials]
   )
-
-  React.useEffect(() => {
-    const sceneNodes = []
-
-    DEBUG: console.log('gltf', gltf)
-
-    for (const [name, properties] of Object.entries(nodes)) {
-      if (properties.uuid === scene.uuid) {
-        continue
-      }
-
-      const material = originalMaterialsIndexRef.current[name]
-
-      sceneNodes.push({
-        material: {
-          name: material?.name,
-          type: material?.type,
-        },
-        name,
-        type: properties.type,
-      })
-    }
-
-    setGlb(gltf)
-
-    vscode.postMessage({
-      scene: { nodes: sceneNodes.sort((a, b) => a.name.localeCompare(b.name)) },
-      type: 'scene',
-    })
-  }, [nodes, scene])
 
   const showLights =
     !wireframe && ['basic', 'basic-randomized'].includes(materialType)
@@ -173,15 +126,13 @@ function Mesh({ url }: RenderMeshProps) {
   )
 }
 
-function _Delegate({ url, controller }: RenderMeshProps & Props) {
+function _Delegate({ url }: RenderMeshProps) {
+  useReadyContext(url)
+
   const { camera } = useThree()
-  const stateRestoredRef = React.useRef(false)
 
   React.useEffect(() => {
-    const state = cameraState.peek()
-    if (stateRestoredRef.current || !state) {
-      return
-    }
+    const state = cameraState.value
 
     const {
       position: [x, y, z],
@@ -190,8 +141,6 @@ function _Delegate({ url, controller }: RenderMeshProps & Props) {
 
     camera.rotation.set(a, b, c)
     camera.position.set(x, y, z)
-
-    stateRestoredRef.current = true
   }, [camera])
 
   React.useEffect(() => {
@@ -205,12 +154,12 @@ function _Delegate({ url, controller }: RenderMeshProps & Props) {
   }, [camera])
 
   useFrame(({}, delta) => {
-    controller?.forward(delta)
+    context.peek().controller?.forward(delta)
   })
 
   return (
     <>
-      <Mesh url={url} />
+      <Mesh />
       <OrbitControls />
       <GizmoHelper>
         <GizmoViewport axisColors={['#ff004c', '#5fa600', '#0086ea']} />
@@ -219,18 +168,10 @@ function _Delegate({ url, controller }: RenderMeshProps & Props) {
   )
 }
 
-interface Props {
-  controller?: AnimationController
-}
-
-function Viewer({ controller }: Props) {
+function Viewer() {
   const url = context.value.blobUrl
 
-  return (
-    <Canvas>
-      {url && <_Delegate controller={controller} url={url} />}
-    </Canvas>
-  )
+  return <Canvas>{url && <_Delegate url={url} />}</Canvas>
 }
 
 const colors = ['#608871', '#a88398', '#9b768a', '#557c7d', '#929775']

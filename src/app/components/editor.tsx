@@ -9,34 +9,26 @@ import styles from './editor.module.css'
 import { vscode } from '../lib/vscode'
 
 function Editor() {
-  const { glb } = context.value
-  const controller = React.useMemo(() => {
-    if (!glb?.animations?.length) {
-      return
-    }
-
-    return new AnimationController(glb.animations, glb.scene)
-  }, [glb])
+  const { controller } = context.value
 
   React.useEffect(() => {
     const dispose = [activateContext(), activateCamera()]
     vscode.postMessage({ type: 'ready' })
 
-    return () => dispose.forEach((fn) => fn?.())
+    return () => {
+      context.peek().controller?.dispose()
+      dispose.forEach((fn) => fn?.())
+    }
   }, [])
 
-  React.useEffect(() => {
-    return () => {
-      controller?.dispose()
-    }
-  }, [controller])
+  console.log('controller [animation] is, ', controller)
 
   return (
     <div className={styles.editor}>
       <Header />
 
       <div className={styles.viewer}>
-        <Viewer controller={controller} />
+        <Viewer />
       </div>
 
       {controller && <Timeline controller={controller} />}

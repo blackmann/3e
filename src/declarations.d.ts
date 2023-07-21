@@ -1,14 +1,11 @@
-type NodeType = 'Mesh' | 'Bone' | 'Object3D' | 'SkinnedMesh' | (string & {})
-
-interface MeshRep {
-  material: {
-    name?: string
-    type: string
-  }
-  name: string
-  type: NodeType
+declare module '*.module.css' {
+  const value: Record<string, string>
+  export default value
 }
 
-interface Scene {
-  nodes: MeshRep[]
-}
+// declare module 'gltfjsx' {
+//   import { GLTF } from 'three-stdlib'
+//   function parse(fileName: string, gltf: GLTF, options: {}): void
+
+//   export { parse }
+// }

@@ -17,7 +17,7 @@ function Cursor({ label, position }: CursorProps) {
   return (
     <div className={styles.cursor} style={{ left: position }}>
       <div className={styles.cursorHandle}>{label}</div>
-      <div className={styles.cursorTail}></div>
+      <div className={styles.cursorTail} />
     </div>
   )
 }
@@ -129,7 +129,7 @@ function Timeline({ controller }: Props) {
             }
             title="Copy clip name"
           >
-            <span className="codicon codicon-copy"></span>
+            <span className="codicon codicon-copy" />
           </VSCodeButton>
         </div>
 
@@ -141,7 +141,7 @@ function Timeline({ controller }: Props) {
               onClick={() => controller.seekToStart()}
               title="Move to start"
             >
-              <span className="codicon codicon-debug-reverse-continue"></span>
+              <span className="codicon codicon-debug-reverse-continue" />
             </VSCodeButton>
 
             <VSCodeButton
@@ -151,7 +151,7 @@ function Timeline({ controller }: Props) {
               })}
               onClick={() => controller.togglePlay()}
             >
-              <span className="codicon codicon-play"></span>
+              <span className="codicon codicon-play" />
             </VSCodeButton>
 
             <VSCodeButton
@@ -162,7 +162,7 @@ function Timeline({ controller }: Props) {
               onClick={() => controller.toggleLoop()}
               title="Loop"
             >
-              <span className="codicon codicon-debug-restart"></span>
+              <span className="codicon codicon-debug-restart" />
             </VSCodeButton>
           </div>
         </div>

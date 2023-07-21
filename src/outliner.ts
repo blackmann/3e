@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import type { MeshRep, NodeType, Scene } from './types'
 
 class ItemUnion extends vscode.TreeItem {
   tree?: Scene
@@ -59,24 +60,21 @@ class Outliner implements vscode.TreeDataProvider<ItemUnion> {
 
     const scene = this.scenes[this.activeDocPath]
 
-    return scene.nodes.map(
-      (node) => {
-        const collapsible = node.material.name
+    return scene.nodes.map((node) => {
+      const collapsible = node.material.name
 
-        const item = new ItemUnion(
-          node.name,
-          undefined,
-          node,
-          collapsible ? vscode.TreeItemCollapsibleState.Collapsed : undefined
-        )
+      const item = new ItemUnion(
+        node.name,
+        undefined,
+        node,
+        collapsible ? vscode.TreeItemCollapsibleState.Collapsed : undefined
+      )
 
-        item.iconPath = new vscode.ThemeIcon(getNodeIcon(node.type))
-        item.description = node.type
+      item.iconPath = new vscode.ThemeIcon(getNodeIcon(node.type))
+      item.description = node.type
 
-        return item
-      }
-
-    )
+      return item
+    })
   }
 
   refresh(path?: string) {
