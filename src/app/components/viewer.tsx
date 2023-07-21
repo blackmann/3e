@@ -16,7 +16,7 @@ import {
   OrbitControls,
   useGLTF,
 } from '@react-three/drei'
-import cameraState, { setCameraState } from '../lib/camera'
+import cameraState, { saveCameraState } from '../lib/camera'
 import context, { setGlb } from '../lib/context'
 import AnimationController from '../lib/animation-controller'
 import type { GLTF } from 'three-stdlib'
@@ -80,7 +80,6 @@ function Mesh({ url }: RenderMeshProps) {
     Record<string, Material | undefined>
   >({})
   const materialsIndexRef = React.useRef<Record<string, Material>>({})
-  const mixerRef = React.useRef<THREE.AnimationMixer>()
 
   const getMaterial = React.useCallback(
     (name: string) => {
@@ -199,10 +198,8 @@ function _Delegate({ url, controller }: RenderMeshProps & Props) {
     const interval = setInterval(() => {
       const { x, y, z } = camera.position
       const { x: a, y: b, z: c } = camera.rotation
-
-      // maybe call this when a change actually occurs?
-      setCameraState({ position: [x, y, z], rotation: [a, b, c] })
-    }, 1000)
+      saveCameraState({ position: [x, y, z], rotation: [a, b, c] })
+    }, 500)
 
     return () => clearInterval(interval)
   }, [camera])
@@ -211,7 +208,15 @@ function _Delegate({ url, controller }: RenderMeshProps & Props) {
     controller?.forward(delta)
   })
 
-  return <Mesh url={url} />
+  return (
+    <>
+      <Mesh url={url} />
+      <OrbitControls />
+      <GizmoHelper>
+        <GizmoViewport axisColors={['#ff004c', '#5fa600', '#0086ea']} />
+      </GizmoHelper>
+    </>
+  )
 }
 
 interface Props {
@@ -224,11 +229,6 @@ function Viewer({ controller }: Props) {
   return (
     <Canvas>
       {url && <_Delegate controller={controller} url={url} />}
-
-      <OrbitControls />
-      <GizmoHelper>
-        <GizmoViewport axisColors={['#ff004c', '#5fa600', '#0086ea']} />
-      </GizmoHelper>
     </Canvas>
   )
 }

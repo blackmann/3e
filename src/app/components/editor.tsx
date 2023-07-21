@@ -10,28 +10,26 @@ import { vscode } from '../lib/vscode'
 
 function Editor() {
   const { glb } = context.value
-  const [controller, setController] = React.useState<AnimationController>()
+  const controller = React.useMemo(() => {
+    if (!glb?.animations?.length) {
+      return
+    }
+
+    return new AnimationController(glb.animations, glb.scene)
+  }, [glb])
 
   React.useEffect(() => {
     const dispose = [activateContext(), activateCamera()]
-
     vscode.postMessage({ type: 'ready' })
 
     return () => dispose.forEach((fn) => fn?.())
   }, [])
 
   React.useEffect(() => {
-    if (!glb?.animations?.length) {
-      return
-    }
-
-    const controller = new AnimationController(glb.animations, glb.scene)
-    setController(controller)
-
     return () => {
-      controller.dispose()
+      controller?.dispose()
     }
-  }, [glb])
+  }, [controller])
 
   return (
     <div className={styles.editor}>

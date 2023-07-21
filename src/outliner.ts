@@ -45,9 +45,9 @@ class Outliner implements vscode.TreeDataProvider<ItemUnion> {
       const items: ItemUnion[] = []
 
       if (material.name) {
-        const item = new ItemUnion(element.props.material.name || '[default]')
+        const item = new ItemUnion(material.name)
 
-        item.description = element.props.material.type
+        item.description = material.type
         item.iconPath = new vscode.ThemeIcon('jersey')
         items.push(item)
       }
@@ -61,14 +61,17 @@ class Outliner implements vscode.TreeDataProvider<ItemUnion> {
 
     return scene.nodes.map(
       (node) => {
+        const collapsible = node.material.name
+
         const item = new ItemUnion(
           node.name,
           undefined,
           node,
-          vscode.TreeItemCollapsibleState.Collapsed
+          collapsible ? vscode.TreeItemCollapsibleState.Collapsed : undefined
         )
 
-        item.iconPath = new vscode.ThemeIcon('symbol-field')
+        item.iconPath = new vscode.ThemeIcon(getNodeIcon(node.type))
+        item.description = node.type
 
         return item
       }
@@ -94,6 +97,30 @@ class Outliner implements vscode.TreeDataProvider<ItemUnion> {
       Outliner.treeDataType,
       outliner
     )
+  }
+}
+
+function getNodeIcon(nodeType: NodeType) {
+  switch (nodeType) {
+    case 'Mesh': {
+      return 'symbol-field'
+    }
+
+    case 'Object3D': {
+      return 'database'
+    }
+
+    case 'Bone': {
+      return 'git-commit'
+    }
+
+    case 'SkinnedMesh': {
+      return 'squirrel'
+    }
+
+    default: {
+      return 'symbol-misc'
+    }
   }
 }
 
