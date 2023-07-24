@@ -1,5 +1,4 @@
 import context, { activate as activateContext } from '../lib/context'
-import AnimationController from '../lib/animation-controller'
 import Header from './header'
 import React from 'react'
 import Timeline from './timeline'
@@ -20,8 +19,6 @@ function Editor() {
       dispose.forEach((fn) => fn?.())
     }
   }, [])
-
-  console.log('controller [animation] is, ', controller)
 
   return (
     <div className={styles.editor}>

@@ -7,7 +7,7 @@ import Outliner from './outliner'
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     EditorProvider.register(context),
-    Outliner.register(context)
+    ...Outliner.register(context)
   )
 }
 

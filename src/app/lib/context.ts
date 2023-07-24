@@ -5,11 +5,14 @@ import { signal } from '@preact/signals-react'
 import { useGLTF } from '@react-three/drei'
 import { vscode } from './vscode'
 
-const context = signal({
-  blobUrl: <string | undefined>undefined,
-  controller: <AnimationController | undefined>undefined,
-  glb: <ParsedGLTFResults | undefined>undefined,
-})
+interface AppContext {
+  blobUrl?: string
+  controller?: AnimationController
+  glb?: ParsedGLTFResults
+  selectedObject?: string
+}
+
+const context = signal<AppContext>({})
 
 function setBlobUrl(url: string) {
   context.value = { ...context.value, blobUrl: url }
@@ -19,19 +22,29 @@ function setGlb(glb: ParsedGLTFResults) {
   context.value = { ...context.value, glb }
 }
 
-
 function setController(controller: AnimationController) {
   context.value = { ...context.value, controller }
 }
 
+function setSelectedObject(selectedObject?: string) {
+  context.value = { ...context.value, selectedObject }
+}
+
 function activate() {
   const fn = (e: MessageEvent) => {
-    if (e.data?.type !== 'glb') {
-      return
-    }
+    switch (e.data?.type) {
+      case 'glb': {
+        const url = URL.createObjectURL(new Blob([e.data.blob as Uint8Array]))
+        setBlobUrl(url)
 
-    const url = URL.createObjectURL(new Blob([e.data.blob as Uint8Array]))
-    setBlobUrl(url)
+        return
+      }
+
+      case 'select': {
+        console.log('selectedObject', e.data?.name)
+        setSelectedObject(e.data?.name)
+      }
+    }
   }
 
   window.addEventListener('message', fn)
@@ -75,7 +88,8 @@ function useReadyContext(url: string) {
     }
 
     setGlb(gltf)
-    animations.length && setController(new AnimationController(animations, scene))
+    animations.length &&
+      setController(new AnimationController(animations, scene))
 
     vscode.postMessage({
       scene: { nodes: sceneNodes.sort((a, b) => a.name.localeCompare(b.name)) },
@@ -85,4 +99,4 @@ function useReadyContext(url: string) {
 }
 
 export default context
-export { activate, setBlobUrl, setGlb, useReadyContext }
+export { activate, setSelectedObject, setBlobUrl, setGlb, useReadyContext }

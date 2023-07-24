@@ -1,12 +1,17 @@
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import {
+  BoxGeometry,
+  Color,
   DoubleSide,
   Group,
   Material,
   MeshBasicMaterial,
   MeshNormalMaterial,
   MeshStandardMaterial,
+  Mesh as ThreeMesh,
+  Vector2,
 } from 'three'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { EffectComposer, OutlinePass, RenderPass } from 'three-stdlib'
 import {
   Environment,
   GizmoHelper,
@@ -41,7 +46,28 @@ interface ObjectRenderProps {
 }
 
 function ObjectRender({ getMaterial, scene, nodes }: ObjectRenderProps) {
-  const { scene: appScene } = useThree()
+  const { scene: appScene, camera, gl, size } = useThree()
+
+  const [composer, outlinePass] = React.useMemo(() => {
+    const composer = new EffectComposer(gl)
+    composer.addPass(new RenderPass(appScene, camera))
+
+    const outlinePass = new OutlinePass(new Vector2(0, 0), appScene, camera)
+    outlinePass.edgeStrength = 8
+    outlinePass.visibleEdgeColor.set('#ff0000')
+
+    const cube = new ThreeMesh(
+      new BoxGeometry(1, 0.5),
+      new MeshNormalMaterial()
+    )
+    appScene.add(cube)
+
+    outlinePass.selectedObjects = [cube]
+
+    composer.addPass(outlinePass)
+
+    return [composer, outlinePass]
+  }, [appScene, camera, gl])
 
   React.useEffect(() => {
     Object.values(nodes).forEach((node) => {
@@ -53,7 +79,32 @@ function ObjectRender({ getMaterial, scene, nodes }: ObjectRenderProps) {
     return () => {
       appScene.remove(scene)
     }
-  }, [appScene, getMaterial, nodes, scene])
+  }, [appScene, camera, getMaterial, gl, nodes, scene])
+
+  React.useEffect(() => {
+    composer.setSize(size.width, size.height)
+    outlinePass.setSize(size.width, size.height)
+  }, [composer, outlinePass, size])
+
+  React.useEffect(() => {
+    const { glb, selectedObject } = context.value
+    if (!(selectedObject && glb)) {
+      return
+    }
+
+    const { nodes } = glb
+    const node = nodes[selectedObject]
+
+    outlinePass.selectedObjects = [node]
+  }, [context.value])
+
+  useFrame((_, delta) => {
+    // const p = gl.autoClear
+    // gl.autoClear = false
+    // composer.render(delta)
+
+    // gl.autoClear = p
+  }, 1)
 
   return null
 }
@@ -157,6 +208,8 @@ function _Delegate({ url }: RenderMeshProps) {
     context.peek().controller?.forward(delta)
   })
 
+  // const selected = context.value.glb?.nodes?.[context.value.selectedObject]
+
   return (
     <>
       <Mesh />
@@ -164,6 +217,10 @@ function _Delegate({ url }: RenderMeshProps) {
       <GizmoHelper>
         <GizmoViewport axisColors={['#ff004c', '#5fa600', '#0086ea']} />
       </GizmoHelper>
+
+      {/* <EffectComposer multisampling={0}>
+        <Outline selection={selected ? [selected] : []} />
+      </EffectComposer> */}
     </>
   )
 }

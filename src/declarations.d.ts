@@ -3,6 +3,10 @@ declare module '*.module.css' {
   export default value
 }
 
+interface H {
+  tall: boolean
+}
+
 // declare module 'gltfjsx' {
 //   import { GLTF } from 'three-stdlib'
 //   function parse(fileName: string, gltf: GLTF, options: {}): void

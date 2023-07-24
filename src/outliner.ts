@@ -22,6 +22,7 @@ class Outliner implements vscode.TreeDataProvider<ItemUnion> {
   static treeDataType = '3e.outline'
 
   private activeDocPath?: string
+  private activeWebviewPanel?: vscode.WebviewPanel
   private scenes: Record<string, Scene> = {}
 
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<
@@ -70,6 +71,8 @@ class Outliner implements vscode.TreeDataProvider<ItemUnion> {
         collapsible ? vscode.TreeItemCollapsibleState.Collapsed : undefined
       )
 
+      item.contextValue = 'object'
+
       item.iconPath = new vscode.ThemeIcon(getNodeIcon(node.type))
       item.description = node.type
 
@@ -82,19 +85,28 @@ class Outliner implements vscode.TreeDataProvider<ItemUnion> {
     this._onDidChangeTreeData.fire(undefined)
   }
 
+  setActiveWebview(webviewPanel: vscode.WebviewPanel) {
+    this.activeWebviewPanel = webviewPanel
+  }
+
   setScene(path: string, scene: Scene) {
     this.scenes[path] = scene
     this._onDidChangeTreeData.fire(undefined)
   }
 
-  static register(ctx: vscode.ExtensionContext): vscode.Disposable {
+  static register(ctx: vscode.ExtensionContext): vscode.Disposable[] {
     const outliner = new Outliner()
     Outliner.instance = outliner
 
-    return vscode.window.registerTreeDataProvider(
-      Outliner.treeDataType,
-      outliner
-    )
+    return [
+      vscode.window.registerTreeDataProvider(Outliner.treeDataType, outliner),
+      vscode.commands.registerCommand('3e.focusObject', (item: ItemUnion) => {
+        Outliner.instance?.activeWebviewPanel?.webview.postMessage({
+          name: item.label,
+          type: 'select',
+        })
+      }),
+    ]
   }
 }
 

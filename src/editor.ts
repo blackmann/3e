@@ -183,11 +183,10 @@ class EditorProvider implements vscode.CustomEditorProvider<Doc> {
     if (webviewPanel.active) {
       this.active = [webviewPanel, doc]
       Outliner.instance?.refresh(doc.uri.path)
-    } else {
-      if (webviewPanel === this.active?.[0]) {
-        this.active = undefined
-        Outliner.instance?.refresh(undefined)
-      }
+      Outliner.instance?.setActiveWebview(webviewPanel)
+    } else if (webviewPanel === this.active?.[0]) {
+      this.active = undefined
+      Outliner.instance?.refresh(undefined)
     }
   }
 

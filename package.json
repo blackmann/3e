@@ -15,6 +15,13 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "3e.focusObject",
+        "title": "Focus object",
+        "icon": "$(eye)"
+      }
+    ],
     "customEditors": [
       {
         "viewType": "3e.editor",
@@ -40,7 +47,16 @@
         "view": "3e.outline",
         "contents": "Open a GLB file or select a tab with one opened"
       }
-    ]
+    ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "3e.focusObject",
+          "when": "view == 3e.outline && viewItem == object",
+          "group": "inline"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
@@ -77,6 +93,7 @@
     "@preact/signals-react": "1.2.2",
     "@react-three/drei": "^9.78.2",
     "@react-three/fiber": "^8.13.5",
+    "@react-three/postprocessing": "2.7.1",
     "@vscode/codicons": "^0.0.33",
     "@vscode/webview-ui-toolkit": "^1.2.2",
     "clsx": "1.2.1",
