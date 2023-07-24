@@ -56,6 +56,7 @@ function activate() {
 }
 
 function useReadyContext(url: string) {
+  // FIXME: Handle THREE.GLTFLoader: Unknown extension "KHR_materials_pbrSpecularGlossiness".
   const gltf = useGLTF(url) as ParsedGLTFResults
 
   React.useMemo(() => {

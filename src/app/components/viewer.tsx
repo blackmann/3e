@@ -82,7 +82,7 @@ function ObjectRender({ getMaterial, scene, nodes }: ObjectRenderProps) {
   React.useEffect(() => {
     const dpr = Math.min(window.devicePixelRatio, 2)
 
-    outlinePass.setSize(size.width, size.height)
+    outlinePass.setSize(size.width * dpr, size.height * dpr)
     fxaa.uniforms['resolution'].value.set(
       1 / (size.width * dpr),
       1 / (size.height * dpr)
