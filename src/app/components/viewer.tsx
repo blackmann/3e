@@ -1,17 +1,20 @@
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import {
-  BoxGeometry,
-  Color,
   DoubleSide,
   Group,
   Material,
   MeshBasicMaterial,
   MeshNormalMaterial,
   MeshStandardMaterial,
-  Mesh as ThreeMesh,
   Vector2,
 } from 'three'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { EffectComposer, OutlinePass, RenderPass } from 'three-stdlib'
+import {
+  EffectComposer,
+  FXAAShader,
+  OutlinePass,
+  RenderPass,
+  ShaderPass,
+} from 'three-stdlib'
 import {
   Environment,
   GizmoHelper,
@@ -48,25 +51,20 @@ interface ObjectRenderProps {
 function ObjectRender({ getMaterial, scene, nodes }: ObjectRenderProps) {
   const { scene: appScene, camera, gl, size } = useThree()
 
-  const [composer, outlinePass] = React.useMemo(() => {
+  const [composer, outlinePass, fxaa] = React.useMemo(() => {
     const composer = new EffectComposer(gl)
     composer.addPass(new RenderPass(appScene, camera))
 
+    const fxaa = new ShaderPass(FXAAShader)
+    composer.addPass(fxaa)
+
     const outlinePass = new OutlinePass(new Vector2(0, 0), appScene, camera)
-    outlinePass.edgeStrength = 8
-    outlinePass.visibleEdgeColor.set('#ff0000')
-
-    const cube = new ThreeMesh(
-      new BoxGeometry(1, 0.5),
-      new MeshNormalMaterial()
-    )
-    appScene.add(cube)
-
-    outlinePass.selectedObjects = [cube]
+    outlinePass.edgeStrength = 4
+    outlinePass.visibleEdgeColor.set('#f48224')
 
     composer.addPass(outlinePass)
 
-    return [composer, outlinePass]
+    return [composer, outlinePass, fxaa]
   }, [appScene, camera, gl])
 
   React.useEffect(() => {
@@ -82,9 +80,15 @@ function ObjectRender({ getMaterial, scene, nodes }: ObjectRenderProps) {
   }, [appScene, camera, getMaterial, gl, nodes, scene])
 
   React.useEffect(() => {
-    composer.setSize(size.width, size.height)
+    const dpr = Math.min(window.devicePixelRatio, 2)
+
     outlinePass.setSize(size.width, size.height)
-  }, [composer, outlinePass, size])
+    fxaa.uniforms['resolution'].value.set(
+      1 / (size.width * dpr),
+      1 / (size.height * dpr)
+    )
+    composer.setSize(size.width * dpr, size.height * dpr)
+  }, [composer, outlinePass, size.height, size.width, fxaa])
 
   React.useEffect(() => {
     const { glb, selectedObject } = context.value
@@ -96,14 +100,11 @@ function ObjectRender({ getMaterial, scene, nodes }: ObjectRenderProps) {
     const node = nodes[selectedObject]
 
     outlinePass.selectedObjects = [node]
-  }, [context.value])
+  }, [context.value, outlinePass])
 
   useFrame((_, delta) => {
-    // const p = gl.autoClear
-    // gl.autoClear = false
-    // composer.render(delta)
-
-    // gl.autoClear = p
+    gl.autoClear = false
+    composer.render(delta)
   }, 1)
 
   return null
@@ -208,19 +209,13 @@ function _Delegate({ url }: RenderMeshProps) {
     context.peek().controller?.forward(delta)
   })
 
-  // const selected = context.value.glb?.nodes?.[context.value.selectedObject]
-
   return (
     <>
       <Mesh />
       <OrbitControls />
-      <GizmoHelper>
+      <GizmoHelper renderPriority={2}>
         <GizmoViewport axisColors={['#ff004c', '#5fa600', '#0086ea']} />
       </GizmoHelper>
-
-      {/* <EffectComposer multisampling={0}>
-        <Outline selection={selected ? [selected] : []} />
-      </EffectComposer> */}
     </>
   )
 }

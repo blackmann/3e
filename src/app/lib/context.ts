@@ -41,7 +41,6 @@ function activate() {
       }
 
       case 'select': {
-        console.log('selectedObject', e.data?.name)
         setSelectedObject(e.data?.name)
       }
     }
