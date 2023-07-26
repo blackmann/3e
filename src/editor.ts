@@ -89,7 +89,7 @@ class EditorProvider implements vscode.CustomEditorProvider<Doc> {
         this.context.extensionUri,
         'out',
         'app/index.css'
-      )
+      ),
     ]
 
     webviewPanel.webview.html = html({ css, js })
@@ -183,11 +183,9 @@ class EditorProvider implements vscode.CustomEditorProvider<Doc> {
     if (webviewPanel.active) {
       this.active = [webviewPanel, doc]
       Outliner.instance?.refresh(doc.uri.path)
-    } else {
-      if (webviewPanel === this.active?.[0]) {
-        this.active = undefined
-        Outliner.instance?.refresh(undefined)
-      }
+    } else if (webviewPanel === this.active?.[0]) {
+      this.active = undefined
+      Outliner.instance?.refresh(undefined)
     }
   }
 
@@ -203,7 +201,9 @@ class EditorProvider implements vscode.CustomEditorProvider<Doc> {
 }
 
 function html({ css, js }: Record<string, vscode.Uri[]>) {
-  const allCss = css.map((c) => `<link rel="stylesheet" href="${c}" />`).join('\n')
+  const allCss = css
+    .map((c) => `<link rel="stylesheet" href="${c}" />`)
+    .join('\n')
   const allJs = js.map((j) => `<script src="${j}"></script>`).join('\n')
 
   return /* html */ `

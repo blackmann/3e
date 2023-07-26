@@ -4,6 +4,7 @@ import {
   VSCodeDropdown,
   VSCodeOption,
 } from '@vscode/webview-ui-toolkit/react'
+import appearance, { alternateTimeUnit } from '../lib/appearance'
 import React from 'react'
 import clsx from 'clsx'
 import styles from './timeline.module.css'
@@ -103,6 +104,9 @@ interface Props {
 function Timeline({ controller }: Props) {
   const animations = controller.animations
 
+  const unit = appearance.value.timeUnit
+  const scale = unit === 'ms' ? 1000 : 1
+
   return (
     <div className={styles.timeline}>
       <header className={styles.header}>
@@ -169,9 +173,23 @@ function Timeline({ controller }: Props) {
 
         <div className={styles.timeInfo}>
           <div className={styles.time}>
-            <span>{Math.trunc(controller.state.value.currentTime)}</span>
-            <span>{Math.trunc(controller.state.value.duration)}</span>
+            <span>
+              {Math.trunc(controller.state.value.currentTime * scale)}
+              {unit}
+            </span>
+            <span>
+              {Math.trunc(controller.state.value.duration * scale)}
+              {unit}
+            </span>
           </div>
+
+          <VSCodeButton
+            appearance="icon"
+            onClick={alternateTimeUnit}
+            title="Alternate ms/s"
+          >
+            <span className="codicon codicon-arrow-swap" />
+          </VSCodeButton>
         </div>
       </header>
 

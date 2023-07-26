@@ -13,6 +13,7 @@
         "@typescript-eslint"
     ],
     "rules": {
+        "no-undef": "off",
         "no-unused-vars": "off",
         "curly": "warn",
         "eqeqeq": "warn",
