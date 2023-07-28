@@ -133,6 +133,9 @@ function _Delegate({ url }: RenderMeshProps) {
 
   React.useEffect(() => {
     const state = cameraState.value
+    if (!state) {
+      return
+    }
 
     const {
       position: [x, y, z],
