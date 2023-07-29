@@ -38,7 +38,7 @@ function activate() {
   const fn = (e: MessageEvent) => {
     if (e.data.type === 'restore-state') {
       const state: ExtensionState = e.data.state
-      if (state.appearance) {
+      if (state?.appearance) {
         appearance.value = { ...appearance.value, ...state.appearance }
       }
     }
