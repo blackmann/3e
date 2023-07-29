@@ -9,7 +9,6 @@ import appearance, {
   setEnvironmentPreset,
   toggleWireframe,
 } from '../lib/appearance'
-import Archive from '../svgs/Archive'
 import type { PresetsType } from '@react-three/drei/helpers/environment-assets'
 import React from 'react'
 import Wireframe from '../svgs/Wireframe'
@@ -87,7 +86,7 @@ function Header() {
           onClick={exportToJsx}
           title="GLB to JSX"
         >
-          <Archive />
+          <span className="codicon codicon-code" />
         </VSCodeButton>
       </div>
     </header>

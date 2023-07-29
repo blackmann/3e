@@ -35,12 +35,17 @@
 }
 
 .timeInfo {
+  align-items: center;
   display: flex;
   justify-content: end;
 }
 
-.time > * {
+.time>* {
   padding: 0.15rem 0.5rem;
+}
+
+.time {
+  margin-right: 0.25rem;
 }
 
 .time :first-child {
@@ -106,7 +111,7 @@
   background-color: var(--background);
 }
 
-.pad.inactive > .padLabel {
+.pad.inactive>.padLabel {
   color: var(--vscode-disabledForeground);
 }
 

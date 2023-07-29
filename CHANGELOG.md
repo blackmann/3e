@@ -4,6 +4,10 @@ All notable changes to the "3e" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.6] - 26 July 2023
+
+- Restore appearance state on load.
+
 ## [0.0.5] - 20 July 2023
 
 - Animations. You can select tracks to play.

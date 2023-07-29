@@ -1,3 +1,4 @@
+import { CameraState, ExtensionState } from '../../types'
 import { signal } from '@preact/signals-react'
 import { vscode } from './vscode'
 

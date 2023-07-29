@@ -1,0 +1,11 @@
+.popover {
+  position: absolute;
+}
+
+.portal {
+  width: 100vh;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
