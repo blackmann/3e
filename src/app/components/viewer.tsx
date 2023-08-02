@@ -1,20 +1,15 @@
+import { BlendFunction, KernelSize } from 'postprocessing'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import {
   DoubleSide,
+  FloatType,
   Group,
   Material,
   MeshBasicMaterial,
   MeshNormalMaterial,
   MeshStandardMaterial,
-  Vector2,
 } from 'three'
-import {
-  EffectComposer,
-  FXAAShader,
-  OutlinePass,
-  RenderPass,
-  ShaderPass,
-} from 'three-stdlib'
+import { EffectComposer, Outline } from '@react-three/postprocessing'
 import {
   Environment,
   GizmoHelper,
@@ -49,23 +44,7 @@ interface ObjectRenderProps {
 }
 
 function ObjectRender({ getMaterial, scene, nodes }: ObjectRenderProps) {
-  const { scene: appScene, camera, gl, size } = useThree()
-
-  const [composer, outlinePass, fxaa] = React.useMemo(() => {
-    const composer = new EffectComposer(gl)
-    composer.addPass(new RenderPass(appScene, camera))
-
-    const fxaa = new ShaderPass(FXAAShader)
-    composer.addPass(fxaa)
-
-    const outlinePass = new OutlinePass(new Vector2(0, 0), appScene, camera)
-    outlinePass.edgeStrength = 4
-    outlinePass.visibleEdgeColor.set('#f48224')
-
-    composer.addPass(outlinePass)
-
-    return [composer, outlinePass, fxaa]
-  }, [appScene, camera, gl])
+  const { scene: appScene, camera, gl } = useThree()
 
   React.useEffect(() => {
     Object.values(nodes).forEach((node) => {
@@ -79,34 +58,6 @@ function ObjectRender({ getMaterial, scene, nodes }: ObjectRenderProps) {
     }
   }, [appScene, camera, getMaterial, gl, nodes, scene])
 
-  React.useEffect(() => {
-    const dpr = Math.min(window.devicePixelRatio, 2)
-
-    outlinePass.setSize(size.width * dpr, size.height * dpr)
-    fxaa.uniforms['resolution'].value.set(
-      1 / (size.width * dpr),
-      1 / (size.height * dpr)
-    )
-    composer.setSize(size.width * dpr, size.height * dpr)
-  }, [composer, outlinePass, size.height, size.width, fxaa])
-
-  React.useEffect(() => {
-    const { glb, selectedObject } = context.value
-    if (!(selectedObject && glb)) {
-      return
-    }
-
-    const { nodes } = glb
-    const node = nodes[selectedObject]
-
-    outlinePass.selectedObjects = [node]
-  }, [context.value, outlinePass])
-
-  useFrame((_, delta) => {
-    gl.autoClear = false
-    composer.render(delta)
-  }, 1)
-
   return null
 }
 
@@ -118,6 +69,15 @@ function Mesh() {
   } = context.value.glb!
   const { wireframe, materialType } = appearance.value
   const randomizedMaterialsIndexRef = React.useRef<Record<string, Material>>({})
+
+  const selection = React.useMemo(() => {
+    const selectedObject = context.value.selectedObject
+    if (!selectedObject) {
+      return []
+    }
+
+    return [nodes[selectedObject]]
+  }, [nodes, context.value.selectedObject])
 
   const getMaterial = React.useCallback(
     (name: string) => {
@@ -174,6 +134,18 @@ function Mesh() {
       {showEnvironment && (
         <Environment preset={appearance.value.environmentPreset} />
       )}
+
+      <EffectComposer autoClear={false} frameBufferType={FloatType}>
+        <Outline
+          blendFunction={BlendFunction.ALPHA}
+          blur
+          edgeStrength={2}
+          kernelSize={KernelSize.VERY_SMALL}
+          selection={selection}
+          visibleEdgeColor={0xff9876}
+          xRay
+        />
+      </EffectComposer>
     </>
   )
 }
@@ -225,8 +197,13 @@ function _Delegate({ url }: RenderMeshProps) {
 
 function Viewer() {
   const url = context.value.blobUrl
+  const adjustColor = ['normal', 'wireframe'].includes(appearance.value.materialType)
 
-  return <Canvas>{url && <_Delegate url={url} />}</Canvas>
+  return (
+    <Canvas flat={adjustColor} linear={adjustColor}>
+      {url && <_Delegate url={url} />}
+    </Canvas>
+  )
 }
 
 const colors = ['#608871', '#a88398', '#9b768a', '#557c7d', '#929775']
